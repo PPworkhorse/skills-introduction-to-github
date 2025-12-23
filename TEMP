@@ -1,242 +1,136 @@
-(sde:clear)
-(sde:set-process-up-direction "-z")
-
-(define Tsi 10)
-(define Lsi 7 )
-(define tAl2O3 @tAl@)
-(define tSiO2 @tOX@)
-(define tW @tW@)
-(define LCT 0.1)
-
-(define Xmin 0)
-(define Xmax (+ Xmin Tsi))
-
-(define Ymin 0)
-(define Ymax (+ Ymin Lsi))
-(define YAlL (- (/ Lsi 2) tAl2O3 tSiO2 (/ tW 2) ))
-(define YOXL (+ YAlL tAl2O3))
-(define YWL  (+ YOXL tSiO2))
-(define YWR  (+ YWL tW ))	
-(define YOXR  (+ YWR tSiO2 ))
-(define YAlR  (+ YOXR tAl2O3 ))
-
-(sdegeo:create-rectangle  (position Xmin Ymin 0)  (position Xmax Ymax 0) "Silicon" "Sub")
-(sdedr:define-constant-profile "pdop_sub" "pSiliconActiveConcentration" 1.6e16)
-(sdedr:define-constant-profile-region "Ppdop_sub" "pdop_sub" "Sub")
-
-(sdegeo:create-rectangle  (position 0 YAlL 0)  (position Xmax YAlR 0) "Nitride" "NIT")
-
-(sdegeo:create-rectangle  (position 0 YOXL 0)  (position Xmax YOXR 0) "Oxide" "OX")
-
-(sdegeo:create-rectangle  (position 0 YWL 0)  (position Xmax YWR 0) "PolySilicon" "WW")
-(sdedr:define-constant-profile "pdop_p" "pSiliconActiveConcentration" 1.0e20)
-(sdedr:define-constant-profile-region "Ppdop_p" "pdop_p" "WW")
-
-(define EH.metal (sdegeo:create-rectangle  (position 0 (- (/ YAlL 2) 0.05) 0)  (position -0.1 (+ (/ YAlL 2) 0.05) 0) "Tungsten" "EH"))
-(define EL.metal (sdegeo:create-rectangle  (position 0 (- (+ (/ YAlL 2) YAlR)  0.05) 0)  (position -0.1 (+ (+ (/ YAlL 2) YAlR)  0.05) 0) "Tungsten" "EL"))
-
-(sdegeo:define-contact-set "EH")
-(sdegeo:set-current-contact-set "EH")
-(sdegeo:set-contact-boundary-edges EH.metal)
-(sdegeo:delete-region EH.metal)
- 
-(sdegeo:define-contact-set "EL")
-(sdegeo:set-current-contact-set "EL")
-(sdegeo:set-contact-boundary-edges EL.metal)
-(sdegeo:delete-region EL.metal)
-
-(sdedr:define-refeval-window "Pl.global" "Rectangle"
-                (position 0 -1 0) (position Xmax Ymax  0))
-(sdedr:define-refinement-size "Ref.global" 0.1 0.1  0.05 0.05)
-(sdedr:define-refinement-placement "Ref.global" "Ref.global" "Pl.global")
-(sdedr:define-refinement-function "Ref.global" "DopingConcentration" "MaxTransDiff" 1)
-
-;# 8. Generate and save the 2D structure
-(sde:build-mesh "n@node@")
-
-
+## Tool: Sentaurus Device 
+## Characteristics: Breakdown Voltage
+## Dependency: Should be run after the process simulation of NMOS device
 #setdep @node|sde@
-#if @CV@ == 0
-#noexec
-#endif
 
-Device CV {
+## Initial settings for Double Trench NMOS power device simulations
 
+File {
+	grid      = "n@node|sde@_msh.tdr"
+	current   = "@plot@"	
+	plot      = "@tdrdat@"
+	parameter = "@parameter@"	
+	
+}
+
+## Electrical contacts
 Electrode {
-            { name= "EH" voltage= 0.0  }
-            { name= "EL"  voltage= 0.0  }
-          }
-
-File {
-   * input files:
-   Grid=    "@tdr@" 
-   Parameter= "@parameter@"
-   * output files:
-   Plot=    "@tdrdat@"
-   Current= "@plot@"
+	
+	{ Name="drain" Voltage= 0.0 Resist= @<AF/1e-8>@ }   
+	{ Name="source" Voltage= 0.0 }
+	{ Name="gate" Voltage= 0.0 Material= "PolySi"}
+	
 }
 
-Physics{
-   Fermi     
-}
-
+## Physics models
 Physics {
-  Mobility(
-    HighFieldSaturation
-	  DopingDependence)
- 
-      Recombination(SRH( DopingDep ))
-      EffectiveIntrinsicDensity(OldSlotboom)
-      
+	Fermi
+	AreaFactor  = @AF@
+	EffectiveIntrinsicDensity ( OldSlotboom NoFermi )
+	Recombination (
+		SRH(DopingDependence TempDependence)
+		Auger
+		Avalanche(Okuto)
+	)  
+	Mobility ( 
+		DopingDependence(Arora)		
+		Enormal(IALMob InterfaceCharge)		
+		HighFieldSaturation
+	)
+	
+	IncompleteIonization (
+		Split (
+			Doping = "NitrogenConcentration"
+			Weights = (0.5 0.5)
+		)
+	)
+	Aniso (
+		Mobility 
+		Avalanche
+		direction(SimulationSystem) = (1,0,0)
+	)	
 }
-
-Physics(MaterialInterface="Nitride/Oxide") {
-
-  Traps (
-    (FixedCharge Conc= -3.5e12 )
-  )
-}
-
-}
-* End of Device
-
-File {
-        ACExtract= "@acplot@"
-        output=   "@log@" 
-     }
-
-Plot{
-  eDensity hDensity
-  TotalCurrent/Vector eCurrent/Vector hCurrent/Vector
-  eMobility hMobility
-  eVelocity hVelocity
-  eQuasiFermi hQuasiFermi
-  eTemperature hTemperature Temperature 
-  ElectricField/Vector Potential SpaceCharge
-  Doping DonorConcentration AcceptorConcentration
-  SRH Band2Band 
-  AvalancheGeneration eAvalancheGeneration hAvalancheGeneration
-  eGradQuasiFermi/Vector hGradQuasiFermi/Vector
-  eEparallel hEparallel eENormal hENormal
-  BandGap 
-  BandGapNarrowing
-  Affinity
-  ConductionBand ValenceBand
-  eBarrierTunneling hBarrierTunneling * BarrierTunneling
-  eTrappedCharge  hTrappedCharge
-  eGapStatesRecombination hGapStatesRecombination
-  eDirectTunnel hDirectTunnel
-}
-
 Math {
-  Extrapolate
-  Derivatives
-  RelErrControl
-  Digits= 5  
-  Notdamped= 100
-  Iterations= 25
-  ExitOnFailure 
-  RelTermMinDensity= 2e8
-  DrForceRefDens= 1e12
-  
-  * Please uncomment if you have 8 CPUs or more
-##  Number_of_Threads= 8
-}
+	Digits= 5	
+	* Extrapolate
+	ErrEff(electron)= 1e5
+	ErrEff(hole)= 1e5
+	
+		
+	Notdamped= 20
+	Iterations= 18
+	CheckRhsAfterUpdate
+	RhsMin= 1e-4
+	RHSMax= 1e60
+	RHSFactor= 1e60
+	
+	ExitOnFailure
 
-System {
-         CV cv (EH=h EL=l )
-         Vsource_pset  vh(h 0) { dc= 0}
-         Vsource_pset  vl(l 0) { dc= 0}
-       }
+		ExtendedPrecision(80)
+		CDensityMin= 1e-25	
+		BreakCriteria{Current (Contact="drain" absval=1.0e-5)}	
+
+	
+		TensorGridAniso(aniso)
+	NumberofThreads= 4	
+	Method= Blocked
+	Transient= BE
+	SubMethod= ILS(set= 6)
+	ACSubMethod= ILS(set= 6)
+	ILSrc="
+		set(6){  
+			iterative(gmres(100), tolrel=1e-10, tolunprec=1e-4, tolabs=0, maxit=200);
+			# preconditioning(ilut(1.0e-9,-1), right);
+			preconditioning(ilut(1.0e-6,-1), right);
+			ordering(symmetric=nd, nonsymmetric=mpsilst);
+			options(compact=yes, linscale=0, refineresidual=10, verbose=0);
+		};"  		
+}
+Plot {
+	Potential SpaceCharge
+	eDensity hDensity
+	eCurrent hCurrent TotalCurrent/vector Current CurrentPotential
+	ElectricField/vector
+	eQuasiFermi hQuasiFermi
+	egradQuasiFermi hgradQuasiFermi
+	SRH Auger
+	AvalancheGeneration eAvalanche hAvalanche
+	eMobility hMobility
+	eMobilityAniso hMobilityAniso
+	eMobilityAnisoFactor hMobilityAnisoFactor
+	DielectricConstant DielectricConstantAniso
+	Doping DonorConcentration DonorPlusConcentration AcceptorConcentration AccepMinusConcentration
+	NitrogenConcentration NitrogenActiveConcentration
+	NitrogenConcentration_split1 NitrogenActiveConcentration_split1 NitrogenPlusConcentration_split1
+	NitrogenConcentration_split2 NitrogenActiveConcentration_split2 NitrogenPlusConcentration_split2
+	AluminumConcentration AluminumActiveConcentration
+	ConductionBandEnergy ValenceBandEnergy BandGap
+	
+	# Traps visualization
+	eTrappedCharge hTrappedCharge
+	eInterfaceTrappedCharge hInterfaceTrappedCharge
+	eGapStatesRecombination hGapStatesRecombination
+	TotalInterfaceTrapConcentration
+}
 
 Solve {
-#- Creating initial guess:
-   Coupled(Iterations= 1000 LineSearchDamping= 1e-8){ Poisson } 
-   Coupled{ Poisson  Electron Hole } 
-  Plot ( FilePrefix= "n@node@_init" )
-  
-   Quasistationary( 
-      InitialStep= 1e-2 Increment= 1.5 
-      MinStep= 1e-5 MaxStep= 0.1 
-      Goal { Parameter= vl.dc Voltage= @<-1.0*30>@ } 
-   ){ Coupled { Poisson  Electron Hole } }
-  Plot ( FilePrefix= "n@node@_N" )
-   NewCurrentPrefix="" 
-   Quasistationary( 
-      DoZero 
-      InitialStep= 1e-2 Increment= 1.5 
-      MinStep= 1e-5 MaxStep= 0.04
-      Goal { Parameter= vl.dc Voltage=@<30>@ } 
-   ){ ACCoupled ( 
-       StartFrequency= 1e6 EndFrequency= 1e6 NumberOfPoints= 1 Decade 
-       Node(h l) Exclude(vh vl) 
-       ACCompute (Time= (Range = (0 1)  Intervals= 100)) 
-      ){ Poisson Electron Hole } 
-   }
-}
-
-
-# Copyright (C) 1994-2023 Synopsys Inc.
-# swbtree vV-2023.12, saved by spp
-
-# --- simulation flow
-sde sde "" {}
-sde tAl "0.05" {0.1} V
-sde tOX "0.05" {0.05} V
-sde tW "0.5" {0.5} R
-CV sdevice "" {}
-CV CV "1" {1} R
-PlotCV svisual "" {}
-# --- variables
-# --- scenarios and parameter specs
-scenario default tAl ""
-scenario default tOX ""
-scenario default tW ""
-scenario default CV ""
-# --- simulation tree
-0 5 0 {} {default} 0
-1 8 5 {0.1} {default} 0
-2 9 8 {0.05} {default} 0
-3 10 9 {0.5} {default} 0
-4 11 10 {} {default} 0
-5 12 11 {1} {default} 0
-6 13 12 {} {default} 0
-
-#define ParFileDir .
-
-Material="Nitride" {
-Epsilon
-  {
-    * Ratio of the permittivities of material and vacuum
-    epsilon = 8.6
-
-  }
- 
-
-Bandgap
-{ * Eg = Eg0 + dEg0 + alpha Tpar^2 / (beta + Tpar) - alpha T^2 / (beta + T)
-  * dEg0(<bgn_model_name>) is a band gap correction term.  It is used together with 
-  * an appropriate BGN model, if this BGN model is chosen in Physics section 
-  * Parameter 'Tpar' specifies the value of lattice 
-  * temperature, at which parameters below are defined
-  * Chi0 is electron affinity.
-	Chi0	= 2.5 # [eV]
-	* ?Bgn2Chi	= 0.5	#
-	Eg0	= 6.8	# [eV]
-	Tpar	= 3.0000e+02	# [K] 
-        * no temperature support for now.
-        alpha   = 0.0
-        beta    = 0.0
-}
-
-}
-
-Material="Oxide" {
-  #includeext "ParFileDir/Oxide.par"
-}
-Material="Silicon" {
-  #includeext "ParFileDir/Silicon.par"
-}
-Material="Tungsten" {
-  #includeext "ParFileDir/Tungsten.par"
+   Coupled(Iterations= 10000 LineSearchDamping= 1e-4) { Poisson }
+   Coupled(Iterations= 1000 LineSearchDamping= 0.001 ) { Poisson Hole }
+   Coupled(Iterations= 1000 LineSearchDamping= 0.001 ) { Poisson Electron Hole  }
+    NewCurrentPrefix="BV_"
+   Transient (
+	
+	BreakCriteria { Current(contact="drain" AbsVal= 1.0) }
+	
+    InitialTime = 0
+    FinalTime = @Scale@
+    Goal {
+      name= drain
+      voltage= 1e5
+    }
+    InitialStep= 1e-09
+    MaxStep= 0.01
+    MinStep= 1e-20 Increment= 2.0 Decrement= 2.5 )
+    { coupled { poisson electron hole }}		
+#   System ("rm n@node@_des.plt")
 }
