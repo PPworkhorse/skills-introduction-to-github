@@ -1,136 +1,240 @@
-## Tool: Sentaurus Device 
-## Characteristics: Breakdown Voltage
-## Dependency: Should be run after the process simulation of NMOS device
-#setdep @node|sde@
+## Two Dimensional Process Simulation of 4H-SiC SiliconCarbide Dual-Trench Power MOSFET
+## --------------------------------------------------------------------
+## Global mesh settings and mesh in newly generated layers
+## --------------------------------------------------------------------
+pdbSet Grid SnMesh min.normal.size 0.001
+pdbSet Grid SnMesh normal.growth.ratio.2d 2.0
 
-## Initial settings for Double Trench NMOS power device simulations
-
-File {
-	grid      = "n@node|sde@_msh.tdr"
-	current   = "@plot@"	
-	plot      = "@tdrdat@"
-	parameter = "@parameter@"	
-	
+fset Fastmode 0
+if { $Fastmode == 1} {
+    pdbSet ImplantData NoImplant 1
+    pdbSet Diffuse NoDiffusionReaction 1
 }
 
-## Electrical contacts
-Electrode {
-	
-	{ Name="drain" Voltage= 0.0 Resist= @<AF/1e-8>@ }   
-	{ Name="source" Voltage= 0.0 }
-	{ Name="gate" Voltage= 0.0 Material= "PolySi"}
-	
-}
+## SiliconCarbide interface refinement
+refinebox interface.materials= { SiliconCarbide } 
 
-## Physics models
-Physics {
-	Fermi
-	AreaFactor  = @AF@
-	EffectiveIntrinsicDensity ( OldSlotboom NoFermi )
-	Recombination (
-		SRH(DopingDependence TempDependence)
-		Auger
-		Avalanche(Okuto)
-	)  
-	Mobility ( 
-		DopingDependence(Arora)		
-		Enormal(IALMob InterfaceCharge)		
-		HighFieldSaturation
-	)
-	
-	IncompleteIonization (
-		Split (
-			Doping = "NitrogenConcentration"
-			Weights = (0.5 0.5)
-		)
-	)
-	Aniso (
-		Mobility 
-		Avalanche
-		direction(SimulationSystem) = (1,0,0)
-	)	
-}
-Math {
-	Digits= 5	
-	* Extrapolate
-	ErrEff(electron)= 1e5
-	ErrEff(hole)= 1e5
-	
-		
-	Notdamped= 20
-	Iterations= 18
-	CheckRhsAfterUpdate
-	RhsMin= 1e-4
-	RHSMax= 1e60
-	RHSFactor= 1e60
-	
-	ExitOnFailure
+##--adaptive mesh box
+refinebox name= Global adaptive SiliconCarbide \
+	refine.min.edge= "@<pmesh * 0.025>@ @<pmesh * 0.025>@ " \
+	refine.max.edge= "@<pmesh * 0.75>@ @< pmesh * 0.15>@ " \
+	abs.error=       "Aluminum=1e15 Nitrogen=5e16" \
+	rel.error=       "Aluminum=0.3 Nitrogen=0.3 " \
+	max.dose.error=  "Aluminum=1e10 Nitrogen=1e10 "
 
-		ExtendedPrecision(80)
-		CDensityMin= 1e-25	
-		BreakCriteria{Current (Contact="drain" absval=1.0e-5)}	
+## Log output level
+pdbSet InfoDefault 0
 
-	
-		TensorGridAniso(aniso)
-	NumberofThreads= 4	
-	Method= Blocked
-	Transient= BE
-	SubMethod= ILS(set= 6)
-	ACSubMethod= ILS(set= 6)
-	ILSrc="
-		set(6){  
-			iterative(gmres(100), tolrel=1e-10, tolunprec=1e-4, tolabs=0, maxit=200);
-			# preconditioning(ilut(1.0e-9,-1), right);
-			preconditioning(ilut(1.0e-6,-1), right);
-			ordering(symmetric=nd, nonsymmetric=mpsilst);
-			options(compact=yes, linscale=0, refineresidual=10, verbose=0);
-		};"  		
-}
-Plot {
-	Potential SpaceCharge
-	eDensity hDensity
-	eCurrent hCurrent TotalCurrent/vector Current CurrentPotential
-	ElectricField/vector
-	eQuasiFermi hQuasiFermi
-	egradQuasiFermi hgradQuasiFermi
-	SRH Auger
-	AvalancheGeneration eAvalanche hAvalanche
-	eMobility hMobility
-	eMobilityAniso hMobilityAniso
-	eMobilityAnisoFactor hMobilityAnisoFactor
-	DielectricConstant DielectricConstantAniso
-	Doping DonorConcentration DonorPlusConcentration AcceptorConcentration AccepMinusConcentration
-	NitrogenConcentration NitrogenActiveConcentration
-	NitrogenConcentration_split1 NitrogenActiveConcentration_split1 NitrogenPlusConcentration_split1
-	NitrogenConcentration_split2 NitrogenActiveConcentration_split2 NitrogenPlusConcentration_split2
-	AluminumConcentration AluminumActiveConcentration
-	ConductionBandEnergy ValenceBandEnergy BandGap
-	
-	# Traps visualization
-	eTrappedCharge hTrappedCharge
-	eInterfaceTrappedCharge hInterfaceTrappedCharge
-	eGapStatesRecombination hGapStatesRecombination
-	TotalInterfaceTrapConcentration
-}
+## Multi-threading
+math numThreads= 4
 
-Solve {
-   Coupled(Iterations= 10000 LineSearchDamping= 1e-4) { Poisson }
-   Coupled(Iterations= 1000 LineSearchDamping= 0.001 ) { Poisson Hole }
-   Coupled(Iterations= 1000 LineSearchDamping= 0.001 ) { Poisson Electron Hole  }
-    NewCurrentPrefix="BV_"
-   Transient (
-	
-	BreakCriteria { Current(contact="drain" AbsVal= 1.0) }
-	
-    InitialTime = 0
-    FinalTime = @Scale@
-    Goal {
-      name= drain
-      voltage= 1e5
-    }
-    InitialStep= 1e-09
-    MaxStep= 0.01
-    MinStep= 1e-20 Increment= 2.0 Decrement= 2.5 )
-    { coupled { poisson electron hole }}		
-#   System ("rm n@node@_des.plt")
-}
+## Using Universal Coordinate System (x down | y right)
+math coord.ucs
+
+## Calibrated set-up for Implantation of Dopants in 4H-SiC
+AdvancedCalibration 4H-SiC
+pdbSet ImplantData MonteCarlo 1
+pdbSet MCImplant Particles @MC@
+pdbSet MCImplant RightBoundary TrueReflect
+
+## Orientation Depenedent Oxidation in SiC
+pdbSet Oxide_SiliconCarbide O2 OriDep 1
+pdbSet Grid TS4Mesh LocalGridSpace 0
+pdbSet Oxide_SiliconCarbide O2 Stress.Dependent.Growth 1
+
+
+## Geometric Parameter Definitions..
+fset Ymax 1.5
+fset tsub 10.0
+fset p_top 0.0
+fset p_epibot [expr $p_top + @Ndrift_Thickness@]
+fset p_bot [expr $p_epibot + $tsub]
+fset Xmax [expr @Ndrift_Thickness@ + $tsub]
+fset epi_thickness @Ndrift_Thickness@
+
+fset trench_depth 1.0
+fset contact_trench_depth 1.5
+
+fset TR_edge 0.3
+fset CONT_edge 1.3
+fset CONT2_edge 0.8
+ 
+## -------------------------------------------------------------
+## Mask definitions
+## -------------------------------------------------------------
+mask name= TRENCH left= 0 right=$TR_edge
+mask name= CONT left=$CONT_edge right= $Ymax
+mask name= CONT2 left=$CONT2_edge right= $Ymax
+
+## Line commands
+line x location= $p_epibot tag= top
+line x location= $p_bot tag= bottom
+
+line y location= 0.0 tag= left
+line y location= $Ymax tag= right
+
+## Simulation Initialization
+region SiliconCarbide xlo= top xhi= bottom ylo= left yhi= right substrate
+
+init field= Nitrogen concentration= @Sub_Doping@ wafer.orient= {0 0 1} \
+	notch.direction= {1 1 0} miscut.tilt= 4 \
+	miscut.toward= {1 1 0} slice.angle= -90
+
+#split Epi
+### Epi: Nitrogen drift layer
+refinebox name=Epi min= 0.0 max= $p_epibot xrefine= "0.01 0.1 0.01"
+grid remesh
+
+set epi_time 360 
+set th1 [expr $epi_thickness*0.1]
+set th2 [expr $epi_thickness*0.1]
+set th3 [expr $epi_thickness*0.8]
+set time1 [expr $epi_time*0.1]
+set time2 [expr $epi_time*0.1]
+set time3 [expr $epi_time*0.8]
+
+deposit SiliconCarbide anisotropic thickness= $th1 species= Nitrogen concentration= @Ndrift_Doping@
+diffuse temperature=1600 time=$time1
+deposit SiliconCarbide anisotropic thickness= $th2 species= Nitrogen concentration= @Ndrift_Doping@
+diffuse temperature=1600 time=$time2
+deposit SiliconCarbide anisotropic thickness= $th3 species= Nitrogen concentration= @Ndrift_Doping@
+diffuse temperature=1600 time=$time3
+
+#split Source
+## N+ Source implantation
+mask name= NP left= $Ymax-0.5 right= $Ymax negative
+photo mask= NP thickness= 1.0
+
+implant Nitrogen dose= 1.6e15 energy= 60  
+implant Nitrogen dose= 1.8e15 energy= 80  
+implant Nitrogen dose= 2.0e15 energy= 100
+implant Nitrogen dose= 1.8e15 energy= 120
+strip photoresist
+
+#split Contact
+## Contact etching
+set th1 [expr $contact_trench_depth * 0.9]
+set th2 [expr $contact_trench_depth * 0.1]
+
+#deposit oxide type=anisotropic thickness=1.0
+
+#photo mask=CONT thickness=1.0
+#etch Oxide type=anisotropic thickness= 2.0
+#etch SiliconCarbide type=trapezoidal angle=89 thickness= $th1
+#etch SiliconCarbide type=isotropic thickness= $th2
+## P+Contact implantation
+
+mask name= PP left= $Ymax-0.5 right= $Ymax 
+photo mask= PP thickness= 1.0
+implant Aluminum dose= 1.6e15 energy= 60 
+implant Aluminum dose= 1.8e15 energy= 80 
+implant Aluminum dose= 2.0e15 energy= 100 
+implant Aluminum dose= 1.8e15 energy= 120 
+strip photoresist
+
+#etch Oxide type=isotropic thickness=4.0
+
+#split Pwell
+## P-Well implantation
+refinebox name=PWell min= 0.0 max= $contact_trench_depth yrefine= "0.1"
+grid remesh
+
+implant Aluminum dose= 1.0e12 energy= 100 tilt= 45.0 mult.rot=4
+implant Aluminum dose= 5.0e12 energy= 200 tilt= 45.0 mult.rot=4
+implant Aluminum dose= 5.0e12 energy= 300 tilt= 45.0 mult.rot=4
+implant Aluminum dose= 5.0e12 energy= 400 tilt= 45.0 mult.rot=4
+
+#split Trench
+deposit Oxide type=fill coord=-1.0
+## Trench formation
+set th1 [expr $trench_depth * 0.8]
+set th2 [expr $trench_depth * 0.2]
+
+photo mask= TRENCH thickness= 2.0
+etch Oxide type=anisotropic thickness=2.0
+strip photoresist
+
+etch SiliconCarbide type=trapezoidal thickness=$th1 angle=86
+etch SiliconCarbide type=isotropic thickness=$th2
+
+etch Oxide type=cmp coord=0.1
+
+#if @PS@ == 1
+photo mask= TRENCH thickness= 2.0
+implant Aluminum dose= 1.6e15 energy= 60 
+implant Aluminum dose= 1.8e15 energy= 80 
+strip photoresist
+#endif
+
+diffuse time= @Diffusion_time@<min> init= 5e-10 temperature= @Diffusion_temperature@<C>
+
+diffuse time= 240.0 temp= 1000 
+grid remesh
+## save the device after oxidation
+struct tdr=n@node@_01
+
+#split GateOx
+## Gate oxidation -- dry oxidation
+## Crystal orientation dependent oxidation rate is supported in SiC 
+#diffuse time= 360 temp= 1050 O2
+#grid remesh
+
+## Gate oxide thickness extraction 
+#puts "DOE: GOX_Bot_Ang [format %.2f [expr 1e4*[interface Oxide thickness y= 0.0]]]" 
+#puts "DOE: GOX_Side_Ang [format %.2f [expr 1e4*[interface Oxide thickness x= 0.5]]]" 
+
+deposit Oxide type= isotropic thickness= 0.05 selective.materials= {SiliconCarbide}
+
+## Poly gate formation
+deposit PolySilicon type=fill coord=0.1
+
+#split ILD
+## ILD deposition
+deposit Oxide thickness= 0.5 isotropic
+
+## Etch source contact
+photo mask=CONT2 thickness=1.0
+etch Oxide type=anisotropic thickness= 10.0
+etch Oxide type=isotropic thickness= 0.1
+strip photoresist
+
+## Aluminum deposition for the source contact
+deposit Aluminum thickness= 1.0 isotropic 
+
+#split Device_MESH
+#transform stretch down location=$Xmax-0.1 length= [expr @Total_Thickness@ - $Xmax]
+#struct tdr=n@node@_original
+
+## Contacts placement for electrical simulation
+contact name= gate point x= 0.5 y= 0.1 PolySilicon
+contact name= source point x= -1 y= $Ymax*0.5 Aluminum
+contact name= drain bottom
+
+## Re-meshing for device simulations
+refinebox clear
+line clear
+
+pdbSet Grid AdaptiveField Refine.Abs.Error 1.0e37
+pdbSet Grid AdaptiveField Refine.Rel.Error 1e10
+pdbSet Grid SnMesh DelaunayType boxmethod
+
+refinebox name= Global \
+ refine.max.edge= "0.5 0.5" refine.min.edge= "@<dmesh * 0.03>@ @<dmesh * 0.03>@" \
+ refine.fields= { NetActive } def.max.asinhdiff= 1 \
+ adaptive SiliconCarbide
+ 
+refinebox name= Ref_active \
+ min= -1.0 max= 3.0 \
+ refine.max.edge= "0.1 0.1" refine.min.edge= "@<dmesh * 0.01>@ @<dmesh * 0.01>@" \
+ refine.fields= { NetActive } def.max.asinhdiff= 1 \
+ adaptive 
+ 
+## Oxide interface refinement 
+refinebox name= Ref_channel min.normal.size= 0.001 normal.growth.ratio= 2.0 \
+ interface.mat.pairs= { SiliconCarbide Oxide } min= "0 0" max= "1.5 $Ymax"
+
+grid remesh
+
+## Save TDR for device simulation
+struct tdr=n@node@ 
+
