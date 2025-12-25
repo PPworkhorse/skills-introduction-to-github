@@ -1,9 +1,37 @@
-## Two Dimensional Process Simulation of 4H-SiC SiliconCarbide Dual-Trench Power MOSFET
-## --------------------------------------------------------------------
-## Global mesh settings and mesh in newly generated layers
-## --------------------------------------------------------------------
-pdbSet Grid SnMesh min.normal.size 0.001
-pdbSet Grid SnMesh normal.growth.ratio.2d 2.0
+# Copyright (C) 1994-2023 Synopsys Inc.
+# swbtree vV-2023.12, saved by gsub0
+
+# --- simulation flow
+sprocess sprocess "" {}
+IdVg sdevice "" {}
+IdVg Vd "1.0" {5.0} R
+PlotIdVg svisual "" {}
+CV sdevice "" {}
+PlotCV svisual "" {}
+# --- variables
+# --- scenarios and parameter specs
+scenario default Vd ""
+# --- simulation tree
+0 2 0 {} {default} 0
+1 7 2 {} {default} 0
+2 22 7 {5.0} {default} 0
+3 24 22 {} {default} 0
+4 25 24 {} {default} 0
+5 27 25 {} {default} 0
+
+
+#----------------------------------------------------------------------------------
+
+math coord.ucs
+
+AdvancedCalibration
+
+pdbSet ImplantData LeftBoundary  Reflect
+pdbSet ImplantData RightBoundary Reflect
+                     
+pdbSet ImplantData DoseControl BeamDose
+pdbSet Oxide_Silicon Boundary BoundaryCondition ThreePhaseSegregation
+                                            
 
 fset Fastmode 0
 if { $Fastmode == 1} {
@@ -11,230 +39,418 @@ if { $Fastmode == 1} {
     pdbSet Diffuse NoDiffusionReaction 1
 }
 
-## SiliconCarbide interface refinement
-refinebox interface.materials= { SiliconCarbide } 
+#header
 
-##--adaptive mesh box
-refinebox name= Global adaptive SiliconCarbide \
-	refine.min.edge= "@<pmesh * 0.025>@ @<pmesh * 0.025>@ " \
-	refine.max.edge= "@<pmesh * 0.75>@ @< pmesh * 0.15>@ " \
-	abs.error=       "Aluminum=1e15 Nitrogen=5e16" \
-	rel.error=       "Aluminum=0.3 Nitrogen=0.3 " \
-	max.dose.error=  "Aluminum=1e10 Nitrogen=1e10 "
+fset Sox   0.01
+fset Tsi   0.22
+fset Tbox  2.0
+fset Tsub  5.0
+fset Tsietch 0.15
+fset Xmin 0.0
+fset Xmax [expr ($Tsi+$Tbox+$Tsub)]
 
-## Log output level
-pdbSet InfoDefault 0
+fset Ymin 0.0
+fset Ymax 4.0
+fset Lsietch 1.275
+fset Lmd  0.5
+fset LPNpp [expr ($Ymax-$Lsietch*2-$Lmd)*0.5]
 
-## Multi-threading
-math numThreads= 4
+fset LPp2P 0.525
+fset LPpPR [expr ($Ymax*0.5-$LPp2P)]
+fset LNpPR [expr ($Ymax*0.5+$LPp2P)]
 
-## Using Universal Coordinate System (x down | y right)
-math coord.ucs
+fset Lct 0.175
+#endheader
 
-## Calibrated set-up for Implantation of Dopants in 4H-SiC
-AdvancedCalibration 4H-SiC
-pdbSet ImplantData MonteCarlo 1
-pdbSet MCImplant Particles @MC@
-pdbSet MCImplant RightBoundary TrueReflect
-
-## Orientation Depenedent Oxidation in SiC
-pdbSet Oxide_SiliconCarbide O2 OriDep 1
-pdbSet Grid TS4Mesh LocalGridSpace 0
-pdbSet Oxide_SiliconCarbide O2 Stress.Dependent.Growth 1
+# uncomment following line, if you have 4 CPU or more.
+math numThreads= 8
 
 
-## Geometric Parameter Definitions..
-fset Ymax 1.5
-fset tsub 10.0
-fset p_top 0.0
-fset p_epibot [expr $p_top + @Ndrift_Thickness@]
-fset p_bot [expr $p_epibot + $tsub]
-fset Xmax [expr @Ndrift_Thickness@ + $tsub]
-fset epi_thickness @Ndrift_Thickness@
+line x location= $Xmin   tag= top
+line x location= 10.0    tag= bottom
 
-fset trench_depth 1.0
-fset contact_trench_depth 1.5
-
-fset TR_edge 0.3
-fset CONT_edge 1.3
-fset CONT2_edge 0.8
- 
-## -------------------------------------------------------------
-## Mask definitions
-## -------------------------------------------------------------
-mask name= TRENCH left= 0 right=$TR_edge
-mask name= CONT left=$CONT_edge right= $Ymax
-mask name= CONT2 left=$CONT2_edge right= $Ymax
-
-## Line commands
-line x location= $p_epibot tag= top
-line x location= $p_bot tag= bottom
-
-line y location= 0.0 tag= left
+line y location= $Ymin tag= left
 line y location= $Ymax tag= right
 
-## Simulation Initialization
-region SiliconCarbide xlo= top xhi= bottom ylo= left yhi= right substrate
 
-init field= Nitrogen concentration= @Sub_Doping@ wafer.orient= {0 0 1} \
-	notch.direction= {1 1 0} miscut.tilt= 4 \
-	miscut.toward= {1 1 0} slice.angle= -90
+#------ Simulation Region Define -------------------
+region Silicon substrate xlo= top xhi= bottom ylo= left yhi= right
+init concentration= 1e15 field= Boron wafer.orient= 100 flat.orient= {1 1 0}
 
-#split Epi
-### Epi: Nitrogen drift layer
-refinebox name=Epi min= 0.0 max= $p_epibot xrefine= "0.01 0.1 0.01"
+##-----Initial mesh setting-----------
+
+grid set.min.normal.size= 0.005 \
+     set.normal.growth.ratio.2d= 2.0 \
+     set.max.points= 10000000 set.max.neighbor.ratio= 1e6
+
+refinebox name=Global_Si Silicon       \
+    min= "$Xmin $Ymin" max= "$Xmax $Ymax"  \
+    xrefine= "0.05 1.0 "                   \
+    yrefine= "0.2 0.2"               
+
+refinebox name=Global_Top Silicon       \
+    min= "$Xmin $Ymin" max= "$Tsi*1.5 $Ymax"  \
+    xrefine= "0.005 0.01 "                   \
+    yrefine= "0.05  0.05"                 
+
+refinebox name=Global_JUNC Silicon       \
+    min= "$Xmin $Ymax*0.5-0.2" max= "$Tsi*1.5 $Ymax*0.5+0.2"  \
+    xrefine= "0.005 0.01 "                   \
+    yrefine= "0.01  0.01"        
+    
 grid remesh
 
-set epi_time 360 
-set th1 [expr $epi_thickness*0.1]
-set th2 [expr $epi_thickness*0.1]
-set th3 [expr $epi_thickness*0.8]
-set time1 [expr $epi_time*0.1]
-set time2 [expr $epi_time*0.1]
-set time3 [expr $epi_time*0.8]
+etch silicon type= cmp coord= $Tsi+$Tbox 
 
-deposit SiliconCarbide anisotropic thickness= $th1 species= Nitrogen concentration= @Ndrift_Doping@
-diffuse temperature=1600 time=$time1
-deposit SiliconCarbide anisotropic thickness= $th2 species= Nitrogen concentration= @Ndrift_Doping@
-diffuse temperature=1600 time=$time2
-deposit SiliconCarbide anisotropic thickness= $th3 species= Nitrogen concentration= @Ndrift_Doping@
-diffuse temperature=1600 time=$time3
+deposit material= {Oxide}   type= fill  coord= {$Tsi}
+deposit material= {Silicon} type= fill  coord= 0.0 region.name= SOI fields.values= {Boron=1e15}
 
-#split Source
-## N+ Source implantation
-mask name= NP left= $Ymax-0.5 right= $Ymax negative
-photo mask= NP thickness= 1.0
-
-implant Nitrogen dose= 1.6e15 energy= 60  
-implant Nitrogen dose= 1.8e15 energy= 80  
-implant Nitrogen dose= 2.0e15 energy= 100
-implant Nitrogen dose= 1.8e15 energy= 120
+mask name= Tetch segments= { $Ymin $LPNpp $LPNpp+$Lsietch $LPNpp+$Lsietch+$Lmd $LPNpp+$Lsietch*2+$Lmd $Ymax } negative
+photo mask= Tetch thickness= 1.0
+etch material= {Silicon} type= anisotropic thickness= $Tsietch
 strip photoresist
 
-#split Contact
-## Contact etching
-set th1 [expr $contact_trench_depth * 0.9]
-set th2 [expr $contact_trench_depth * 0.1]
+deposit material= {Oxide}   type= fill  coord= -0.01
 
-#deposit oxide type=anisotropic thickness=1.0
-
-#photo mask=CONT thickness=1.0
-#etch Oxide type=anisotropic thickness= 2.0
-#etch SiliconCarbide type=trapezoidal angle=89 thickness= $th1
-#etch SiliconCarbide type=isotropic thickness= $th2
-## P+Contact implantation
-
-mask name= PP left= $Ymax-0.5 right= $Ymax 
-photo mask= PP thickness= 1.0
-implant Aluminum dose= 1.6e15 energy= 60 
-implant Aluminum dose= 1.8e15 energy= 80 
-implant Aluminum dose= 2.0e15 energy= 100 
-implant Aluminum dose= 1.8e15 energy= 120 
+mask name= Ptype left= $Xmin right= $Ymax*0.5 
+photo mask= Ptype thickness= 1.0
+implant Boron dose= 1.0e13 energy= 30.0 tilt= 0.0
+implant Boron dose= 1.0e13 energy= 48.0 tilt= 0.0
 strip photoresist
 
-#etch Oxide type=isotropic thickness=4.0
-
-#split Pwell
-## P-Well implantation
-refinebox name=PWell min= 0.0 max= $contact_trench_depth yrefine= "0.1"
-grid remesh
-
-implant Aluminum dose= 1.0e12 energy= 100 tilt= 45.0 mult.rot=4
-implant Aluminum dose= 5.0e12 energy= 200 tilt= 45.0 mult.rot=4
-implant Aluminum dose= 5.0e12 energy= 300 tilt= 45.0 mult.rot=4
-implant Aluminum dose= 5.0e12 energy= 400 tilt= 45.0 mult.rot=4
-
-#split Trench
-deposit Oxide type=fill coord=-1.0
-## Trench formation
-set th1 [expr $trench_depth * 0.8]
-set th2 [expr $trench_depth * 0.2]
-
-photo mask= TRENCH thickness= 2.0
-etch Oxide type=anisotropic thickness=2.0
+mask name= Ntype left= $Xmin right= $Ymax*0.5 negative
+photo mask= Ntype thickness= 1.0
+implant Phosphorus dose= 1.0e13 energy= 80.0  tilt= 0.0
+implant Phosphorus dose= 1.0e13 energy= 140.0 tilt= 0.0
 strip photoresist
 
-etch SiliconCarbide type=trapezoidal thickness=$th1 angle=86
-etch SiliconCarbide type=isotropic thickness=$th2
-
-etch Oxide type=cmp coord=0.1
-
-#if @PS@ == 1
-photo mask= TRENCH thickness= 2.0
-implant Aluminum dose= 1.6e15 energy= 60 
-implant Aluminum dose= 1.8e15 energy= 80 
-strip photoresist
-#endif
-
-diffuse time= @Diffusion_time@<min> init= 5e-10 temperature= @Diffusion_temperature@<C>
-
-diffuse time= 240.0 temp= 1000 
-grid remesh
-## save the device after oxidation
-struct tdr=n@node@_01
-
-#split GateOx
-## Gate oxidation -- dry oxidation
-## Crystal orientation dependent oxidation rate is supported in SiC 
-#diffuse time= 360 temp= 1050 O2
-#grid remesh
-
-## Gate oxide thickness extraction 
-#puts "DOE: GOX_Bot_Ang [format %.2f [expr 1e4*[interface Oxide thickness y= 0.0]]]" 
-#puts "DOE: GOX_Side_Ang [format %.2f [expr 1e4*[interface Oxide thickness x= 0.5]]]" 
-
-deposit Oxide type= isotropic thickness= 0.05 selective.materials= {SiliconCarbide}
-
-## Poly gate formation
-deposit PolySilicon type=fill coord=0.1
-
-#split ILD
-## ILD deposition
-deposit Oxide thickness= 0.5 isotropic
-
-## Etch source contact
-photo mask=CONT2 thickness=1.0
-etch Oxide type=anisotropic thickness= 10.0
-etch Oxide type=isotropic thickness= 0.1
+mask name= Pptype left= $Xmin right= $LPpPR 
+photo mask= Pptype thickness= 1.0
+implant Boron dose= 1.5e14 energy= 48.0 tilt= 0.0
 strip photoresist
 
-## Aluminum deposition for the source contact
-deposit Aluminum thickness= 1.0 isotropic 
+mask name= Nptype left= $Xmin right= $LNpPR negative
+photo mask= Nptype thickness= 1.0
+implant Phosphorus dose= 1.5e14 energy= 140.0 tilt= 0.0
+strip photoresist
 
-#split Device_MESH
-#transform stretch down location=$Xmax-0.1 length= [expr @Total_Thickness@ - $Xmax]
-#struct tdr=n@node@_original
+mask name= Ppptype left= $Xmin right= $LPNpp 
+photo mask= Pptype thickness= 1.0
+implant Boron dose= 3.0e15 energy= 10.0 tilt= 0.0
+strip photoresist
 
-## Contacts placement for electrical simulation
-contact name= gate point x= 0.5 y= 0.1 PolySilicon
-contact name= source point x= -1 y= $Ymax*0.5 Aluminum
-contact name= drain bottom
+mask name= Npptype left= $Xmin right= $Ymax-$LPNpp negative
+photo mask= Nptype thickness= 1.0
+implant Phosphorus dose= 3.0e15 energy= 30.0 tilt= 0.0
+strip photoresist
+#diffuse temperature= 1050 time= 1<s>
 
-## Re-meshing for device simulations
-refinebox clear
-line clear
+temp_ramp name= ANNL time= 15<s> temp= 750.0  ramprate= 20
+temp_ramp name= ANNL time= 12<s> temp= 1050.0 
+temp_ramp name= ANNL time= 20<s> temp= 1050.0 ramprate= -15.0
+diffuse temp_ramp= ANNL
 
-pdbSet Grid AdaptiveField Refine.Abs.Error 1.0e37
-pdbSet Grid AdaptiveField Refine.Rel.Error 1e10
-pdbSet Grid SnMesh DelaunayType boxmethod
+deposit material= {Oxide}   type= fill  coord= -1.0
 
-refinebox name= Global \
- refine.max.edge= "0.5 0.5" refine.min.edge= "@<dmesh * 0.03>@ @<dmesh * 0.03>@" \
- refine.fields= { NetActive } def.max.asinhdiff= 1 \
- adaptive SiliconCarbide
- 
-refinebox name= Ref_active \
- min= -1.0 max= 3.0 \
- refine.max.edge= "0.1 0.1" refine.min.edge= "@<dmesh * 0.01>@ @<dmesh * 0.01>@" \
- refine.fields= { NetActive } def.max.asinhdiff= 1 \
- adaptive 
- 
-## Oxide interface refinement 
-refinebox name= Ref_channel min.normal.size= 0.001 normal.growth.ratio= 2.0 \
- interface.mat.pairs= { SiliconCarbide Oxide } min= "0 0" max= "1.5 $Ymax"
+mask name= CTmask segments= { $Ymin $Ymin+0.15 $Ymin+0.15+$Lct $Ymax-0.15-$Lct $Ymax-0.15 $Ymax} negative
+photo mask= CTmask thickness= 1.0
+etch material= {Oxide} type= anisotropic thickness= 1.0*1.1
+strip photoresist
 
-grid remesh
+deposit material= {Tungsten}   type= fill  coord= -1.0
 
-## Save TDR for device simulation
-struct tdr=n@node@ 
+contact name= "Cpp"  point  x= -0.5 y= $Ymin+0.15+$Lct*0.5 Tungsten replace
+contact name= "Cnp"  point  x= -0.5 y= $Ymax-0.15-$Lct*0.5 Tungsten replace
+	
+struct tdr= n@node@ !Gas
+
+exit
+
+#----------------------------------------------------------------------------------
+
+#setdep @node|sprocess@
+
+File {
+  Grid      = "@tdr@"  
+  Parameter = "@parameter@"
+  Plot      = "@tdrdat@"
+  Current   = "@plot@"
+  Output    = "@log@"
+  
+}
+
+Electrode {
+  { Name="Cpp"    Voltage=0.0 }
+  { Name="Cnp"     Voltage=0.0 }
+
+}
+
+Physics {Fermi}
+
+Physics (Material= Silicon) {	
+	Mobility (
+    HighFieldSaturation
+    DopingDependence
+	)
+    Recombination(SRH)
+    EffectiveIntrinsicDensity(OldSlotboom)
+    Recombination( SRH( DopingDep ) Band2Band(Model= Hurkx) Avalanche(Okuto) )      
+}
+
+Plot{
+  eDensity hDensity
+  TotalCurrent/Vector eCurrent/Vector hCurrent/Vector
+  eMobility hMobility
+  eVelocity hVelocity
+  eQuasiFermi hQuasiFermi
+  eTemperature Temperature * hTemperature
+  ElectricField/Vector Potential SpaceCharge
+  Doping DonorConcentration AcceptorConcentration
+  SRH Band2Band * Auger
+  AvalancheGeneration eAvalancheGeneration hAvalancheGeneration
+  eGradQuasiFermi/Vector hGradQuasiFermi/Vector
+  eEparallel hEparallel eENormal hENormal
+  BandGap 
+  BandGapNarrowing
+  Affinity
+  ConductionBand ValenceBand
+  eBarrierTunneling hBarrierTunneling * BarrierTunneling
+  eTrappedCharge  hTrappedCharge
+  eGapStatesRecombination hGapStatesRecombination
+  eDirectTunnel hDirectTunnel
+  
+}
+
+Math {
+  Extrapolate
+  Derivatives
+  RelErrControl
+  Digits=5
+  RHSmin=1e-10
+  Notdamped=100
+  Iterations=50
+  DirectCurrent
+  ExitOnFailure
+  
+  * Please uncomment if you have 8 CPUs or more
+  **NumberOfThreads= 8
+  
+}
+
+Solve {
+  Coupled { Poisson }
+  Coupled ( Iterations= 100 LineSearchDamping= 1e-8 ){ Poisson } 
+  Coupled { Poisson Electron Hole }
+  
+  NewCurrentPrefix= "IV_" 
+  Quasistationary( 
+    InitialStep= 1e-2 Increment= 1.3 
+    MinStep= 1e-6 MaxStep= 0.05 
+    Goal { Name="Cpp" Voltage= @Vd@ } 
+  ){ Coupled { Poisson Electron Hole } }
+}
+
+#----------------------------------------------------------------------------------
+
+#----------------------------------------------------------------------#
+load_library extract
+lib::SetInfoDef 1
+#----------------------------------------------------------------------#
+set N     @node@
+set i     @node:index@
+
+set Weff  1.0
+set Vd1 4
+set Vd2 5
+
+#- Automatic alternating color assignment tied to node index
+#----------------------------------------------------------------------#
+set COLORS  [list green blue red orange magenta violet brown]
+set NCOLORS [llength $COLORS]
+set color   [lindex  $COLORS [expr $i%$NCOLORS]]
+
+#- Plotting IdVg
+#----------------------------------------------------------------------#
+echo "#########################################"
+echo "Plotting IV curve"
+echo "#########################################"
+load_file @[relpath IV_@plot@]@ -name PLT_IV($N)
+
+if {[lsearch [list_plots] Plot_IdVg] == -1} {
+	create_plot -1d -name Plot_IdVg
+}
+select_plots Plot_IdVg
+
+set Vp [get_variable_data "Cpp OuterVoltage" -dataset PLT_IV($N)]
+set Ip [get_variable_data "Cpp TotalCurrent" -dataset PLT_IV($N)]
+
+create_curve -name IdVgIV($N) -dataset PLT_IV($N) \
+	-axisX "Cpp OuterVoltage" -axisY "Cpp TotalCurrent"
+	
+	
+set_curve_prop IdVgIV($N) -label "IV" \
+	-color $color -line_style solid -line_width 3 \
+	-markers_type circle -markers_size 5 -show_markers
+
+ext::ExtractValue -out Id1 -name "noprint" -x $Vp -y $Ip -yLog 1 -xo $Vd1
+ext::ExtractValue -out Id2 -name "noprint" -x $Vp -y $Ip -yLog 1 -xo $Vd2
+
+set Ron [expr (($Vd2-$Vd1)/($Id2-$Id1))]
+puts "DOE: Ron [format %.3f $Ron]"
+
+#----------------------------------------------------------------------------------
+
+
+#setdep @node|sprocess@
+
+Device CV {
+
+Electrode {
+	{ Name="Cpp"    Voltage=0.0 }
+	{ Name="Cnp"    Voltage=0.0 }
+          }
+
+File {
+   * input files:
+   Grid=    "@tdr@" 
+   Parameter= "@parameter@"
+   * output files:
+   Plot=    "@tdrdat@"
+   Current= "@plot@"
+}
+
+Physics{
+   Fermi     
+}
+
+Physics (Material= Silicon) {
+	Mobility (
+    HighFieldSaturation
+    DopingDependence
+	)
+    Recombination(SRH)
+    EffectiveIntrinsicDensity(OldSlotboom)
+    Recombination( SRH( DopingDep ) Band2Band(Model= Hurkx) Avalanche(Okuto) )  
+}
+
+}
+* End of Device
+
+File {
+        ACExtract= "@acplot@"
+        output=   "@log@" 
+     }
+
+Plot{
+  eDensity hDensity
+  TotalCurrent/Vector eCurrent/Vector hCurrent/Vector
+  eMobility hMobility
+  eVelocity hVelocity
+  eQuasiFermi hQuasiFermi
+  eTemperature hTemperature Temperature 
+  ElectricField/Vector Potential SpaceCharge
+  Doping DonorConcentration AcceptorConcentration
+  SRH Band2Band 
+  AvalancheGeneration eAvalancheGeneration hAvalancheGeneration
+  eGradQuasiFermi/Vector hGradQuasiFermi/Vector
+  eEparallel hEparallel eENormal hENormal
+  BandGap 
+  BandGapNarrowing
+  Affinity
+  ConductionBand ValenceBand
+  eBarrierTunneling hBarrierTunneling * BarrierTunneling
+  eTrappedCharge  hTrappedCharge
+  eGapStatesRecombination hGapStatesRecombination
+  eDirectTunnel hDirectTunnel
+   
+}
+Math {
+  Extrapolate
+  Derivatives
+  RelErrControl
+  Digits= 5  
+  Notdamped= 100
+  Iterations= 25
+  ExitOnFailure 
+  RelTermMinDensity= 2e8
+  DrForceRefDens= 1e12
+                                   
+  * Please uncomment if you have 8 CPUs or more
+  **Number_of_Threads= 8
+}
+
+System {
+    CV cv(Cpp=1 Cnp=2 )
+    Vsource_pset  vp(1 0) { dc= 0}
+    Vsource_pset  vn(2 0) { dc= 0}
+     }
+
+Solve {
+#- Creating initial guess:                            
+   Coupled(Iterations= 1000 LineSearchDamping= 1e-8){ Poisson } 
+   Coupled{ Poisson Electron Hole } 
+                                     
+##   Quasistationary( 
+##      InitialStep= 1e-2 Increment= 1.5 
+##      MinStep= 1e-5 MaxStep= 0.1 
+##      Goal { Parameter= vp.dc Voltage= 0 } 
+##   ){ Coupled { Poisson Electron Hole } }
+
+   NewCurrentPrefix="" 
+   Quasistationary( 
+      DoZero 
+      InitialStep= 1e-2 Increment= 1.5 
+      MinStep= 1e-5 MaxStep= 0.01
+      Goal { Parameter= vp.dc Voltage= 0.01 } 
+   ){ ACCoupled (           
+       StartFrequency= 1e6 EndFrequency= 1e6 NumberOfPoints= 1 Decade 
+       Node(1 2) Exclude(vp vn) 
+       ACCompute (Time= (Range = (0 1)  Intervals= 50)) 
+      ){ Poisson Electron Hole } 
+   }
+}
+##---------------------------------------------------------------------------------
+
+
+#----------------------------------------------------------------------#
+load_library extract
+lib::SetInfoDef 1
+#----------------------------------------------------------------------#
+set N     @node@
+set i     @node:index@
+
+#- Automatic alternating color assignment tied to node index
+#----------------------------------------------------------------------#
+set COLORS  [list green blue red orange magenta violet brown]
+set NCOLORS [llength $COLORS]
+set color   [lindex  $COLORS [expr $i%$NCOLORS]]
+#----------------------------------------------------------------------#
+
+echo "##############################"
+echo "plotting C-V curves"
+echo "##############################"
+load_file @acplot@ -name AC($N)
+
+if {[lsearch [list_plots] Plot_CV] == -1} {
+	create_plot -1d -name Plot_CV
+}
+select_plots Plot_CV
+
+create_curve -name Cpp($N) -dataset AC($N) -axisX "v(1)" -axisY "c(1,1)"
+
+set_curve_prop Cpp($N) -label "Cpp" \
+	-color $color -line_style solid -line_width 3
+
+set_plot_prop -title "C-V Curves" -title_font_size 16 -show_legend
+set_axis_prop -axis x -title {Voltage [V]} \
+	-title_font_size 16 -label_font_size 14 
+set_axis_prop -axis y -title {Capacitance [F]} \
+	-title_font_size 16 -label_font_size 14 
+set_legend_prop -label_font_size 12 -location bottom_left -label_font_att bold
+
+set Vp  [get_curve_data Cpp($N) -plot Plot_CV -axisX]
+set Cpp [get_curve_data Cpp($N) -plot Plot_CV -axisY]
+
+ext::ExtractValue -out Cj -name "Cj" -x $Vp -y $Cpp -xo 0.0
+
 
