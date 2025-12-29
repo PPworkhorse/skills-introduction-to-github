@@ -1,0 +1,352 @@
+(sde:clear)
+(sde:set-process-up-direction "+z")
+
+
+;device parameter
+(define Lsource 20e-3)
+(define Ldrain Lsource)
+(define Lg 60e-3)
+(define D 20e-3)
+(define Tox 3e-3)
+(define Tgate 6e-3)
+
+;structure generation
+(sdegeo:create-rectangle (position 0 0 0) (position Lsource (/ D 2) 0) "Silicon" "R.Source")
+(sdegeo:create-rectangle (position Lsource 0 0) (position (+ Lsource Lg) (/ D 2) 0) "Silicon" "R.Channel")
+(sdegeo:create-rectangle (position (+ Lsource Lg) 0 0) (position (+ Lsource Lg Ldrain) (/ D 2) 0) "Silicon" "R.Drain")
+
+(sdegeo:create-rectangle (position Lsource (/ D 2) 0) (position (+ Lsource Lg) (+ (/ D 2) Tox) 0) "HfO2" "R.Gox")
+(sdegeo:create-rectangle (position  Lsource  (+ (/ D 2) Tox) 0) (position (+ Lsource Lg) (+ (/ D 2) Tox Tgate) 0) "PolySilicon" "R.Gate")
+
+
+#(sdegeo:sweep (get-body-list) (position (+ Lsource Lg) 0 0 ) (gvector 1.0 0 0)
+#	(sweep:options "solid" #t "sweep_angle" 360 "rigid" #f "miter_type" "default"))
+
+;doping
+(define Nchannel 1e16)
+(define Nsd 5e19)
+
+
+(sdedr:define-constant-profile "CP.Channel" "BoronActiveConcentration" Nchannel)
+
+(sdedr:define-constant-profile-material "PL.Channel"
+	"CP.Channel" "Silicon")
+
+
+
+(sdedr:define-constant-profile "RF_s" "PhosphorusActiveConcentration" Nsd)
+(sdedr:define-constant-profile-region "RP_s" "RF_s" "R.Source")
+(sdedr:define-constant-profile "RF_d" "PhosphorusActiveConcentration" Nsd)
+(sdedr:define-constant-profile-region "RP_d" "RF_d" "R.Drain")
+
+
+
+;contact
+
+(sdegeo:define-contact-set "Source"  4.0  (color:rgb 1.0 0.0 0.0 ) "##" )
+
+(sdegeo:set-contact 
+	(find-edge-id (position 0 (/ D 3) 0 )) 
+	"Source") 
+
+(sdegeo:define-contact-set "Drain"  4.0  (color:rgb 1.0 0.0 0.0 ) "##" )
+
+(sdegeo:set-contact 
+	(find-edge-id (position  (+ Lsource Lg Ldrain) (/ D 3) 0)) 
+	"Drain") 
+
+
+(sdegeo:define-contact-set "Gate"  4.0  (color:rgb 1.0 0.0 0.0 ) "##" )
+
+(sdegeo:set-contact 
+	(find-body-id (position (/ (+ Lg (* 2 Lsource)) 2) (/ (+ Tgate D (* 2 Tox)) 2) 0)) 
+	"Gate") 
+
+(sdegeo:delete-region(find-body-id (position (/ (+ Lg (* 2 Lsource)) 2) (/ (+ Tgate D (* 2 Tox)) 2) 0)))
+
+
+;mesh
+
+;(sdedr:define-refinement-size "RF.ox" 10e-3 5e-3 5e-3 5e-3 5e-3 5e-3)
+;(sdedr:define-refinement-function "RP.ox" "MaxLenInt" "HfO2" "Silicon" 1e-3 1.1 "DoubleSide")
+;(sdedr:define-refinement-material "RP.ox"  "RF.ox" "HfO2")
+
+;(sdedr:define-refinement-size "RF.ch" 10e-3 5e-3 5e-3 5e-3 5e-3 5e-3)
+;(sdedr:define-refinement-function "RP.ch" "MaxLenInt" "Silicon" "HfO2" 1e-3 1.1 "DoubleSide")
+;(sdedr:define-refinement-material "RP.ch"  "RF.ch" "Silicon")
+
+
+
+(define fp 1.0)
+(define ratio_fp 1)
+(define dx  (* (/ Lg 30) fp))
+(define dyz  (* (/ D 15) fp))
+(define dox   (* (/ Tox 5) fp))  
+
+(sdedr:define-refeval-window "W.Global1"  "Rectangle"  
+	(position 0.075 0.0 0 )
+	(position 0.083 0.002 0 )
+	)
+(sdedr:define-refeval-window "W.Global2"  "Rectangle"  
+	(position 0.017 0.0 0 )
+	(position 0.025 0.002 0 )
+	)
+(sdedr:define-refinement-size "R.Global1" 0.0001 0.0001 0.0001 0.0001)
+(sdedr:define-refinement-placement "P.Global1" "R.Global1" "W.Global1")
+(sdedr:define-refinement-placement "P.Global2" "R.Global1" "W.Global2")
+
+(sdedr:define-refinement-window "W.Global" "Cuboid"
+	(position -1 -1 -1)
+	(position 1 1 1 )
+	)
+;(sdedr:define-refinement-size "R.Global" 5e-3 5e-3 5e-3 5e-3 5e-3 5e-3)
+;(sdedr:define-refinement-function "R.Global" "MaxLenInt" "R.Channel" "R.Drain" 1e-3  1.2 "UseRegionNames" "DoubleSide")
+
+;(sdedr:define-refinement-function "R.Global" "MaxLenInt" "R.Channel" "R.Source" 1e-3 1.5 "UseRegionNames" "DoubleSide")
+;(sdedr:define-refinement-function "R.Global" "MaxLenInt" "Silicon" "HfO2" 1e-3  1.5 "DoubleSide")
+(sdedr:define-refinement-size "R.Global" (* dx 0.5) (* dyz 0.5) (* dyz 1) (* dx 0.25) (* dyz 0.25) (* dyz 0.5))
+;(sdedr:define-refinement-function "R.Global" "MaxLenInt" "Silicon" "SiO2" (* dz 1) (* ratio_fp 1.5))
+(sdedr:define-refinement-function "R.Global" "MaxLenInt" "R.Channel" "R.Drain" (* dyz 0.1) (* ratio_fp 1.3) "UseRegionNames" "DoubleSide")
+(sdedr:define-refinement-function "R.Global" "MaxLenInt" "R.Channel" "R.Source" (* dyz 0.1) (* ratio_fp 1.3) "UseRegionNames" "DoubleSide")
+(sdedr:define-refinement-function "R.Global" "MaxLenInt" "Silicon" "HfO2" (* dox 0.1) (* ratio_fp 1.3) "DoubleSide")
+(sdedr:define-refinement-placement "P.Global" "R.Global" "W.Global")
+	
+
+;(define nlevels 5)
+;(define factor 1.5)
+;(sdedr:offset-block "region" "R.Channel" "maxlevel" nlevels)
+;(sdedr:offset-interface "region" "R.Channel" "R.Gox" "hlocal" 0.001 "factor" factor)
+;(sdedr:offset-interface "region" "R.Gox" "R.Channel" "hlocal" (/ Tox 5) "factor" factor)
+	
+;(sdedr:define-refinement-size "RD.Channel" (* dx 2) (* dyz 4) (* dyz 4) (* dx 1) (* dyz 2) (* dyz 2))
+;(sdedr:define-refinement-placement "PL.Channel" "RD.Channel" "R.Channel")	
+
+
+	
+;(sdedr:define-refinement-size "RD.Source" (* dx 4) (* dyz 5) (* dyz 5) (* dx 2) (* dyz 3) (* dyz 3))
+;(sdedr:define-refinement-placement "PL.Source" "RD.Source" "R.Source")
+
+
+;(sdedr:define-refinement-size "RD.Drain" (* dx 4) (* dyz 5) (* dyz 5) (* dx 2) (* dyz 3) (* dyz 3))
+;(sdedr:define-refinement-placement "PL.Drain" "RD.Drain" "R.Drain")
+
+;(sdedr:define-refinement-window "RW.Overlap" "Cuboid"
+;	(position ( * Lgate 0.75) (/ Wsi 2) 0)
+;	(position (+ Lgate (* 0.25 Ldrain)) (/ Wsi -2) Tsi)
+;	)	
+;(sdedr:define-refinement-size "RD.Overlap" (* dx 2) (* dy 4) (* dz 3) (* dx 1) (* dy 2) (* dz 2))
+;(sdedr:define-refinement-function "RD.Overlap" "MaxLenInt" "R.Channel" "R.Drain" 1e-3 1.5 "UseRegionNames" "DoubleSide")
+;(sdedr:define-refinement-placement "PL.Overlap" "RD.Overlap" "RW.Overlap")
+
+
+
+
+
+
+
+(sde:build-mesh  "n@node@")
+
+
+#-------------------------------------------------------------
+
+#if [string match "@Type@" "NMOS"]
+
+
+    #define _Vds_  @Vds@
+    #define _VgsStart_  -3
+    #define _VgsEnd_ 1
+
+  #else
+    #define _Vds_  -0.5
+    #define _VgsStart_  3
+    #define _VgsEnd_ -1
+   
+   #endif
+ 
+ 
+* 1 input outout file
+
+
+
+File {
+	*input files
+	Grid = "@tdr@"
+	Parameter = "@parameter@"
+	
+	* output files
+	Output ="@log@"
+	Plot = "@tdrdat@"
+    Current = "@plot@"
+  *  NewtonPlot= "n@node@_Newton_%d_des.tdr"
+}
+
+* 2 Boundary Condition
+
+Electrode{
+	{ Name= "Source"  Voltage =0.0}
+	{Name= "Gate"  Voltage =0.0}
+	*{Name= "Substrate"  Voltage =0.0}
+	{Name= "Drain"  Voltage =0.0}
+}
+
+* 3 Physics
+ 
+Physics{ *global model
+	
+	Fermi
+}
+
+*material-wise
+Physics(Material = "Silicon"){
+  eQuantumPotential(AutoOrientation density)	
+  Mobility(
+    HighFieldSaturation
+    Enormal (
+	 IALMob(AutoOrientation)
+	 RPS                                    # Used for remote phonon scattering (RPS)
+	 NegInterfaceCharge (SurfaceName="s1")  # Used for remote Coulomb scattering (RCS) and remote dipole scattering (RDS)
+	 PosInterfaceCharge (SurfaceName="s1")  # Used for RCS and RDS
+            )
+          )
+  EffectiveIntrinsicDensity(OldSlotboom)
+  Recombination( SRH( DopingDep )
+  	  		     Auger
+  	  		     Band2Band(Model=NonLocalPath)
+  )
+#  eMultivalley(MLDA kpDOS -density)
+#  hMultivalley(MLDA kpDOS -density)
+}
+* 4 math
+
+Math {
+	  ExtendedPrecision      
+   	  Extrapolate
+	  RelErrControl
+	  Digits= 6
+	  Notdamped= 50
+	  Iterations= 20
+	  RHSmin= 1e-8
+#	  Method= Pardiso	  
+	  DirectCurrent
+	  ExitOnFailure
+	  TensorGridAniso
+      StressMobilityDependence = TensorFactor
+	  Number_of_Threads= 8 
+	  RefDens_eGradQuasiFermi_Zero= 1e12
+	  RefDens_hGradQuasiFermi_Zero= 1e12
+
+	    NonLocalPath (
+  	  Postprocessing
+  	  Derivative= 0                     # compute derivatives
+  	  Strategy=1						# use strategy 1
+  	  N=5 								# collect edges from last 5 iterations
+  	  MinStep=1.0e-5					# define lower boundary
+  	  MaxStep=1.0e-2					# define upper boundary
+  )  
+  
+  Surface "s1" (
+  MaterialInterface= "Silicon/HfO2" 
+  )
+}
+
+* 5 Output
+	
+Plot {
+  eDensity hDensity
+  TotalCurrent/Vector eCurrent/Vector hCurrent/Vector
+  eMobility hMobility
+  eVelocity hVelocity
+  eQuasiFermi hQuasiFermi
+  eTemperature Temperature * hTemperature
+  ElectricField/Vector Potential SpaceCharge
+  Doping DonorConcentration AcceptorConcentration
+  SRH Band2Band * Auger
+  AvalancheGeneration eAvalancheGeneration hAvalancheGeneration
+  eGradQuasiFermi/Vector hGradQuasiFermi/Vector
+  eEparallel hEparallel eENormal hENormal
+  BandGap 
+  BandGapNarrowing
+  Affinity
+  ConductionBand ValenceBand
+  eQuantumPotential
+  eBarrierTunneling hBarrierTunneling * BarrierTunneling
+  eTrappedCharge  hTrappedCharge
+}
+
+* 6 Solve
+Solve {
+	
+	Coupled { Poisson }
+    Coupled ( Iterations= 100 LineSearchDamping= 1e-8 ){ Poisson eQuantumPotential } 
+    Coupled { Poisson Electron Hole eQuantumPotential }
+    * get  a solution 
+
+  Quasistationary( 
+    InitialStep= 1e-2 Increment= 1.35 
+    MinStep= 1e-6 MaxStep= 0.1 
+    Goal { Name="Drain" Voltage= _Vds_ } 
+    Goal { Name="Gate" Voltage= -3.0 } 
+  ){ Coupled { Poisson Electron Hole eQuantumPotential } }    
+    
+  NewCurrentPrefix= "IdVg_"         
+  Quasistationary( 
+    InitialStep= 1e-2 Increment= 1.3 
+    MinStep= 1e-6 MaxStep= 0.1 
+    Goal { Name="Gate" Voltage= 1.0 } 
+  ){ Coupled { Poisson Electron Hole eQuantumPotential }
+    CurrentPlot( Time=(Range=(0 1) Intervals= 100) ) 
+  }
+}
+
+#---------------------------------------------------------------------
+
+#setdep @previous@
+
+#----------------------------------------------------------------------#
+load_library extract
+lib::SetInfoDef 1
+#----------------------------------------------------------------------#
+set N     @node@
+set i     @node:index@
+
+#- Automatic alternating color assignment tied to node index
+#----------------------------------------------------------------------#
+set COLORS  [list green blue red orange magenta violet brown]
+set NCOLORS [llength $COLORS]
+set color   [lindex  $COLORS [expr $i%$NCOLORS]]
+
+#- Plotting IdVg
+#----------------------------------------------------------------------#
+echo "#########################################"
+echo "Plotting Id-Vg (lin) curve"
+echo "#########################################"
+load_file IdVg_@plot@ -name PLT_IdVg($N)
+
+if {[lsearch [list_plots] Plot_IdVg] == -1} {
+	create_plot -1d -name Plot_IdVg
+}
+select_plots Plot_IdVg
+
+set Vgs [get_variable_data "Gate InnerVoltage" -dataset PLT_IdVg($N)]
+set Ids [get_variable_data "Drain TotalCurrent" -dataset PLT_IdVg($N)]
+set B2BId [get_variable_data "eBand2BandGenerationCurrent" -dataset PLT_IdVg($N)]
+set Idtotal [list]
+foreach i $Ids j $B2BId {
+		lappend Idtotal [expr abs($i) + $j]
+}
+create_variable -name absIds -dataset PLT_IdVg($N) -values $Idtotal
+ext::AbsList -out absIds -x $Idtotal ;# Compute absolute value of drain currents
+
+create_curve -name IdVgLin($N) -dataset PLT_IdVg($N) \
+	-axisX "Gate OuterVoltage" -axisY "absIds"
+	
+set_curve_prop IdVgLin($N) -label "IdVg Vd=@Vds@ " \
+	-color $color -line_style solid -line_width 3
+	 
+set_plot_prop -title "I<sub>d</sub>-V<sub>gs</sub> Curves" -title_font_size 25 -show_legend
+set_axis_prop -axis x -title {Gate Voltage [V]} \
+	-title_font_size 20 -label_font_size 15 -type linear 
+set_axis_prop -axis y -title {Drain Current [A/<greek>m</greek>m]} \
+	-title_font_size 20 -label_font_size 15 -type log
+set_legend_prop -label_font_size 15 -location bottom_right -label_font_att bold
+
