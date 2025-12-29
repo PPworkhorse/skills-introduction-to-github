@@ -1,456 +1,1156 @@
 # Copyright (C) 1994-2023 Synopsys Inc.
-# swbtree vV-2023.12, saved by gsub0
+# swbtree vX-2025.09, saved by gsub0
 
 # --- simulation flow
-sprocess sprocess "" {}
-IdVg sdevice "" {}
-IdVg Vd "1.0" {5.0} R
-PlotIdVg svisual "" {}
-CV sdevice "" {}
-PlotCV svisual "" {}
+sde sde "" {}
+sdevice sdevice "" {}
+plotIV_light svisual "" {}
 # --- variables
 # --- scenarios and parameter specs
-scenario default Vd ""
 # --- simulation tree
-0 2 0 {} {default} 0
-1 7 2 {} {default} 0
-2 22 7 {5.0} {default} 0
-3 24 22 {} {default} 0
-4 25 24 {} {default} 0
-5 27 25 {} {default} 0
+0 1 0 {} {default} 0
+1 2 1 {} {default} 0
+2 3 2 {} {default} 0
 
+#--------------------------------------------------
+DATEX2.1
+Datacode
+"$Id: //tcad/gemini/main/src/datexcodes/datexcodes.txt#141 $ $Author: iavci $ $DateTime: 2012/02/14 14:31:34 $"
+"Data codes for semiconductor process and device simulation"
 
-#----------------------------------------------------------------------------------
-
-math coord.ucs
-
-AdvancedCalibration
-
-pdbSet ImplantData LeftBoundary  Reflect
-pdbSet ImplantData RightBoundary Reflect
-                     
-pdbSet ImplantData DoseControl BeamDose
-pdbSet Oxide_Silicon Boundary BoundaryCondition ThreePhaseSegregation
-                                            
-
-fset Fastmode 0
-if { $Fastmode == 1} {
-    pdbSet ImplantData NoImplant 1
-    pdbSet Diffuse NoDiffusionReaction 1
-}
-
-#header
-
-fset Sox   0.01
-fset Tsi   0.22
-fset Tbox  2.0
-fset Tsub  5.0
-fset Tsietch 0.15
-fset Xmin 0.0
-fset Xmax [expr ($Tsi+$Tbox+$Tsub)]
-
-fset Ymin 0.0
-fset Ymax 4.0
-fset Lsietch 1.275
-fset Lmd  0.5
-fset LPNpp [expr ($Ymax-$Lsietch*2-$Lmd)*0.5]
-
-fset LPp2P 0.525
-fset LPpPR [expr ($Ymax*0.5-$LPp2P)]
-fset LNpPR [expr ($Ymax*0.5+$LPp2P)]
-
-fset Lct 0.175
-#endheader
-
-# uncomment following line, if you have 4 CPU or more.
-math numThreads= 8
-
-
-line x location= $Xmin   tag= top
-line x location= 10.0    tag= bottom
-
-line y location= $Ymin tag= left
-line y location= $Ymax tag= right
-
-
-#------ Simulation Region Define -------------------
-region Silicon substrate xlo= top xhi= bottom ylo= left yhi= right
-init concentration= 1e15 field= Boron wafer.orient= 100 flat.orient= {1 1 0}
-
-##-----Initial mesh setting-----------
-
-grid set.min.normal.size= 0.005 \
-     set.normal.growth.ratio.2d= 2.0 \
-     set.max.points= 10000000 set.max.neighbor.ratio= 1e6
-
-refinebox name=Global_Si Silicon       \
-    min= "$Xmin $Ymin" max= "$Xmax $Ymax"  \
-    xrefine= "0.05 1.0 "                   \
-    yrefine= "0.2 0.2"               
-
-refinebox name=Global_Top Silicon       \
-    min= "$Xmin $Ymin" max= "$Tsi*1.5 $Ymax"  \
-    xrefine= "0.005 0.01 "                   \
-    yrefine= "0.05  0.05"                 
-
-refinebox name=Global_JUNC Silicon       \
-    min= "$Xmin $Ymax*0.5-0.2" max= "$Tsi*1.5 $Ymax*0.5+0.2"  \
-    xrefine= "0.005 0.01 "                   \
-    yrefine= "0.01  0.01"        
+Materials {
+    HZO {
+        label   = "HZO"
+        group   = Semiconductor
+        color   = #7d0505, #b38a11
+    }
+ 
+    LiF {
+        label   = "LiF"
+        group   = Insulator
+        color   = #7d0505, #b38a11
+    }
     
-grid remesh
+    Al2O3 {
+        label   = "Al2O3"
+        group   = Insulator
+        color   = #3d0505, #c38a11
+    }
+}
 
-etch silicon type= cmp coord= $Tsi+$Tbox 
+#-------------------------------------------------------
+Material = "Nitride"  { 
 
-deposit material= {Oxide}   type= fill  coord= {$Tsi}
-deposit material= {Silicon} type= fill  coord= 0.0 region.name= SOI fields.values= {Boron=1e15}
+ComplexRefractiveIndex
+{ *  Complex refractive index model: n_complex = n + i*k (unitless)
+  *
+  *  with n = n_0 + delta_n_lambda + delta_n_T + delta_n_carr + delta_n_gain
+  *       k = k_0 +                            + delta_k_carr
+  * Mole fraction dependence (real and imag):
+  *    n_0, k_0
+        n_0     = 3.45  # [1]
+        k_0     = 0.0000e+00    # [1]
+  * Wavelength dependence (real and imag):
+  *    Formula 0: delta_n_lambda = Cn_lambda * lambda + Dn_lambda * lambda^2
+  *               delta_k_lambda = Ck_lambda * lambda + Dk_lambda * lambda^2
+  *    Formula 1: Read tabulated values
+  *               NumericalTable (...)
+  *    Formula 2: Read tabulated values from file
+  *               Numerical table = <string>
+       Formula = 1
+       TableInterpolation = linear
+*        Cn_lambda       = 0.0000e+00    # [um^-1]
+*        Dn_lambda       = 0.0000e+00    # [um^-2]
+*        Ck_lambda       = 0.0000e+00    # [um^-1]
+*        Dk_lambda       = 0.0000e+00    # [um^-2]
+  NumericalTable (
+   0.05166	0.655	0.42;
+   0.05391	0.625	0.481;
+   0.05636	0.611	0.56;
+   0.05904	0.617	0.647;
+   0.06199	0.635	0.743;
+   0.06526	0.676	0.841;
+   0.06888	0.735	0.936;
+   0.07293	0.81	1.03;
+   0.07749	0.902	1.11;
+   0.08266	1.001	1.18;
+   0.08856	1.111	1.26;
+   0.09537	1.247	1.35;
+   0.1033	1.417	1.43;
+   0.1127	1.657	1.52;
+   0.1181	1.827	1.53;
+   0.124	2	1.49;
+   0.1305	2.162	1.44;
+   0.1378	2.326	1.32;
+   0.1459	2.492	1.16;
+   0.155	2.651	0.962;
+   0.16	2.711	0.866;
+   0.1653	2.753	0.75;
+   0.171	2.766	0.612;
+   0.1771	2.752	0.493;
+   0.1837	2.724	0.38;
+   0.1907	2.682	0.273;
+   0.1984	2.62	0.174;
+   0.2066	2.541	0.102;
+   0.2156	2.464	0.057;
+   0.2254	2.393	0.029;
+   0.2362	2.331	0.011;
+   0.248	2.278	4.9000e-03;
+   0.261	2.234	1.2000e-03;
+   0.2755	2.198	2.2000e-04;
+   0.2917	2.167	0.0000e+00;
+   0.31	2.141	0.0000e+00;
+   0.3542	2.099	0.0000e+00;
+   0.4133	2.066	0.0000e+00;
+   0.4959	2.041	0.0000e+00;
+   0.6199	2.022	0.0000e+00;
+   0.8266	2.008	0.0000e+00;
+   1.24	1.998	0.0000e+00;
+   1.3	1.99	0.0000e+00;
+   10.001	1.99	0.0000e+00;
 
-mask name= Tetch segments= { $Ymin $LPNpp $LPNpp+$Lsietch $LPNpp+$Lsietch+$Lmd $LPNpp+$Lsietch*2+$Lmd $Ymax } negative
-photo mask= Tetch thickness= 1.0
-etch material= {Silicon} type= anisotropic thickness= $Tsietch
-strip photoresist
 
-deposit material= {Oxide}   type= fill  coord= -0.01
+  )
+}
 
-mask name= Ptype left= $Xmin right= $Ymax*0.5 
-photo mask= Ptype thickness= 1.0
-implant Boron dose= 1.0e13 energy= 30.0 tilt= 0.0
-implant Boron dose= 1.0e13 energy= 48.0 tilt= 0.0
-strip photoresist
+}
 
-mask name= Ntype left= $Xmin right= $Ymax*0.5 negative
-photo mask= Ntype thickness= 1.0
-implant Phosphorus dose= 1.0e13 energy= 80.0  tilt= 0.0
-implant Phosphorus dose= 1.0e13 energy= 140.0 tilt= 0.0
-strip photoresist
+Material = "Silicon" {
+Bandgap {
+    Eg0 = +1.1752165e+00  # n_i = 9.65e9 at 300 K (Altermatt PVSC Sapporo 1999)
+    alpha = +4.73e-04
+    beta = +6.36e+02
+}
 
-mask name= Pptype left= $Xmin right= $LPpPR 
-photo mask= Pptype thickness= 1.0
-implant Boron dose= 1.5e14 energy= 48.0 tilt= 0.0
-strip photoresist
+* Schenk model
+TableBGN {
+Acceptor  +1.0000000e+10  +000000000e+00
+Acceptor  +1.0000000e+15  +1.4051583e-03
+Acceptor  +1.1748976e+15  +1.5206727e-03
+Acceptor  +1.3803843e+15  +1.6454732e-03
+Acceptor  +1.6218101e+15  +1.7802713e-03
+Acceptor  +1.9054607e+15  +1.9258276e-03
+Acceptor  +2.2387211e+15  +2.0829536e-03
+Acceptor  +2.6302680e+15  +2.2525147e-03
+Acceptor  +3.0902954e+15  +2.4354322e-03
+Acceptor  +3.6307805e+15  +2.6326857e-03
+Acceptor  +4.2657952e+15  +2.8453154e-03
+Acceptor  +5.0118723e+15  +3.0744238e-03
+Acceptor  +5.8884366e+15  +3.3211775e-03
+Acceptor  +6.9183097e+15  +3.5868093e-03
+Acceptor  +8.1283052e+15  +3.8726185e-03
+Acceptor  +9.5499259e+15  +4.1799729e-03
+Acceptor  +1.1220185e+16  +4.5103084e-03
+Acceptor  +1.3182567e+16  +4.8651296e-03
+Acceptor  +1.5488166e+16  +5.2460092e-03
+Acceptor  +1.8197009e+16  +5.6545873e-03
+Acceptor  +2.1379621e+16  +6.0925695e-03
+Acceptor  +2.5118864e+16  +6.5617248e-03
+Acceptor  +2.9512092e+16  +7.0638822e-03
+Acceptor  +3.4673685e+16  +7.6009265e-03
+Acceptor  +4.0738028e+16  +8.1747919e-03
+Acceptor  +4.7863009e+16  +8.7874538e-03
+Acceptor  +5.6234133e+16  +9.4409168e-03
+Acceptor  +6.6069345e+16  +1.0137196e-02
+Acceptor  +7.7624712e+16  +1.0878292e-02
+Acceptor  +9.1201084e+16  +1.1666151e-02
+Acceptor  +1.0715193e+17  +1.2502602e-02
+Acceptor  +1.2589254e+17  +1.3389274e-02
+Acceptor  +1.4791084e+17  +1.4327467e-02
+Acceptor  +1.7378008e+17  +1.5317973e-02
+Acceptor  +2.0417379e+17  +1.6360844e-02
+Acceptor  +2.3988329e+17  +1.7455116e-02
+Acceptor  +2.8183829e+17  +1.8598517e-02
+Acceptor  +3.3113112e+17  +1.9787260e-02
+Acceptor  +3.8904514e+17  +2.1016072e-02
+Acceptor  +4.5708819e+17  +2.2278648e-02
+Acceptor  +5.3703180e+17  +2.3568704e-02
+Acceptor  +6.3095734e+17  +2.4881569e-02
+Acceptor  +7.4131024e+17  +2.6215946e-02
+Acceptor  +8.7096359e+17  +2.7575083e-02
+Acceptor  +1.0232930e+18  +2.8966616e-02
+Acceptor  +1.2022644e+18  +3.0400895e-02
+Acceptor  +1.4125375e+18  +3.1888388e-02
+Acceptor  +1.6595869e+18  +3.3437288e-02
+Acceptor  +1.9498446e+18  +3.5052217e-02
+Acceptor  +2.2908677e+18  +3.6734250e-02
+Acceptor  +2.6915348e+18  +3.8481835e-02
+Acceptor  +3.1622777e+18  +4.0292000e-02
+Acceptor  +3.7153523e+18  +4.2161341e-02
+Acceptor  +4.3651583e+18  +4.4086607e-02
+Acceptor  +5.1286138e+18  +4.6064873e-02
+Acceptor  +6.0255959e+18  +4.8093417e-02
+Acceptor  +7.0794578e+18  +5.0169411e-02
+Acceptor  +8.3176377e+18  +5.2289550e-02
+Acceptor  +9.7723722e+18  +5.4449713e-02
+Acceptor  +1.1481536e+19  +5.6644789e-02
+Acceptor  +1.3489629e+19  +5.8868845e-02
+Acceptor  +1.5848932e+19  +6.1115840e-02
+Acceptor  +1.8620871e+19  +6.3381069e-02
+Acceptor  +2.1877616e+19  +6.5663281e-02
+Acceptor  +2.5703958e+19  +6.7967054e-02
+Acceptor  +3.0199517e+19  +7.0304467e-02
+Acceptor  +3.5481339e+19  +7.2695032e-02
+Acceptor  +4.1686938e+19  +7.5163362e-02
+Acceptor  +4.8977882e+19  +7.7735212e-02
+Acceptor  +5.7543994e+19  +8.0433422e-02
+Acceptor  +6.7608298e+19  +8.3275258e-02
+Acceptor  +7.9432823e+19  +8.6271728e-02
+Acceptor  +9.3325430e+19  +8.9428500e-02
+Acceptor  +1.0964782e+20  +9.2747564e-02
+Acceptor  +1.2882496e+20  +9.6228912e-02
+Acceptor  +1.5135612e+20  +9.9871838e-02
+Acceptor  +1.7782794e+20  +1.0367577e-01
+Acceptor  +2.0892961e+20  +1.0764072e-01
+Acceptor  +2.4547089e+20  +1.1176740e-01
+Acceptor  +2.8840315e+20  +1.1605729e-01
+Acceptor  +3.3884416e+20  +1.2051250e-01
+Acceptor  +3.9810717e+20  +1.2513568e-01
+Acceptor  +4.6773514e+20  +1.2992990e-01
+Acceptor  +5.4954087e+20  +1.3489856e-01
+Acceptor  +6.4565423e+20  +1.4004528e-01
+Acceptor  +7.5857758e+20  +1.4537385e-01
+Acceptor  +8.9125094e+20  +1.5088819e-01
+Acceptor  +1.0471285e+21  +1.5659232e-01
+Acceptor  +1.2302688e+21  +1.6249042e-01
+Acceptor  +1.4454398e+21  +1.6858680e-01
+Acceptor  +1.6982437e+21  +1.7488602e-01
+Acceptor  +1.9952623e+21  +1.8139296e-01
+Acceptor  +2.3442288e+21  +1.8811299e-01
+Acceptor  +2.7542287e+21  +1.9505213e-01
+Acceptor  +3.2359366e+21  +2.0221722e-01
+Acceptor  +3.8018940e+21  +2.0961622e-01
+Acceptor  +4.4668359e+21  +2.1725839e-01
+Acceptor  +5.2480746e+21  +2.2515463e-01
+Acceptor  +6.1659500e+21  +2.3331769e-01
+Acceptor  +7.2443596e+21  +2.4176248e-01
+Acceptor  +8.5113804e+21  +2.5050626e-01
+Acceptor  +1.0000000e+22  +2.5956885e-01
+Donor     +1.0000000e+10  +000000000e+00
+Donor     +1.0000000e+15  +1.4062347e-03
+Donor     +1.1748976e+15  +1.5219386e-03
+Donor     +1.3803843e+15  +1.6469623e-03
+Donor     +1.6218101e+15  +1.7820231e-03
+Donor     +1.9054607e+15  +1.9278886e-03
+Donor     +2.2387211e+15  +2.0853788e-03
+Donor     +2.6302680e+15  +2.2553687e-03
+Donor     +3.0902954e+15  +2.4387915e-03
+Donor     +3.6307805e+15  +2.6366404e-03
+Donor     +4.2657952e+15  +2.8499720e-03
+Donor     +5.0118723e+15  +3.0799081e-03
+Donor     +5.8884366e+15  +3.3276384e-03
+Donor     +6.9183097e+15  +3.5944230e-03
+Donor     +8.1283052e+15  +3.8815942e-03
+Donor     +9.5499259e+15  +4.1905585e-03
+Donor     +1.1220185e+16  +4.5227991e-03
+Donor     +1.3182567e+16  +4.8798772e-03
+Donor     +1.5488166e+16  +5.2634341e-03
+Donor     +1.8197009e+16  +5.6751936e-03
+Donor     +2.1379621e+16  +6.1169637e-03
+Donor     +2.5118864e+16  +6.5906400e-03
+Donor     +2.9512092e+16  +7.0982093e-03
+Donor     +3.4673685e+16  +7.6417546e-03
+Donor     +4.0738028e+16  +8.2234619e-03
+Donor     +4.7863009e+16  +8.8456296e-03
+Donor     +5.6234133e+16  +9.5106804e-03
+Donor     +6.6069345e+16  +1.0221177e-02
+Donor     +7.7624712e+16  +1.0979842e-02
+Donor     +9.1201084e+16  +1.1789578e-02
+Donor     +1.0715193e+17  +1.2653491e-02
+Donor     +1.2589254e+17  +1.3574911e-02
+Donor     +1.4791084e+17  +1.4557386e-02
+Donor     +1.7378008e+17  +1.5604661e-02
+Donor     +2.0417379e+17  +1.6720575e-02
+Donor     +2.3988329e+17  +1.7908875e-02
+Donor     +2.8183829e+17  +1.9172870e-02
+Donor     +3.3113112e+17  +2.0514899e-02
+Donor     +3.8904514e+17  +2.1935611e-02
+Donor     +4.5708819e+17  +2.3433144e-02
+Donor     +5.3703180e+17  +2.5002439e-02
+Donor     +6.3095734e+17  +2.6635059e-02
+Donor     +7.4131024e+17  +2.8319882e-02
+Donor     +8.7096359e+17  +3.0044811e-02
+Donor     +1.0232930e+18  +3.1799142e-02
+Donor     +1.2022644e+18  +3.3575801e-02
+Donor     +1.4125375e+18  +3.5372605e-02
+Donor     +1.6595869e+18  +3.7192170e-02
+Donor     +1.9498446e+18  +3.9040695e-02
+Donor     +2.2908677e+18  +4.0926272e-02
+Donor     +2.6915348e+18  +4.2857330e-02
+Donor     +3.1622777e+18  +4.4841561e-02
+Donor     +3.7153523e+18  +4.6885363e-02
+Donor     +4.3651583e+18  +4.8993682e-02
+Donor     +5.1286138e+18  +5.1170056e-02
+Donor     +6.0255959e+18  +5.3416736e-02
+Donor     +7.0794578e+18  +5.5734777e-02
+Donor     +8.3176377e+18  +5.8124085e-02
+Donor     +9.7723722e+18  +6.0583432e-02
+Donor     +1.1481536e+19  +6.3110525e-02
+Donor     +1.3489629e+19  +6.5702249e-02
+Donor     +1.5848932e+19  +6.8355268e-02
+Donor     +1.8620871e+19  +7.1067129e-02
+Donor     +2.1877616e+19  +7.3837903e-02
+Donor     +2.5703958e+19  +7.6672069e-02
+Donor     +3.0199517e+19  +7.9579985e-02
+Donor     +3.5481339e+19  +8.2578090e-02
+Donor     +4.1686938e+19  +8.5687344e-02
+Donor     +4.8977882e+19  +8.8930252e-02
+Donor     +5.7543994e+19  +9.2327600e-02
+Donor     +6.7608298e+19  +9.5896151e-02
+Donor     +7.9432823e+19  +9.9647875e-02
+Donor     +9.3325430e+19  +1.0359053e-01
+Donor     +1.0964782e+20  +1.0772892e-01
+Donor     +1.2882496e+20  +1.1206626e-01
+Donor     +1.5135612e+20  +1.1660522e-01
+Donor     +1.7782794e+20  +1.2134866e-01
+Donor     +2.0892961e+20  +1.2630001e-01
+Donor     +2.4547089e+20  +1.3146340e-01
+Donor     +2.8840315e+20  +1.3684371e-01
+Donor     +3.3884416e+20  +1.4244647e-01
+Donor     +3.9810717e+20  +1.4827781e-01
+Donor     +4.6773514e+20  +1.5434434e-01
+Donor     +5.4954087e+20  +1.6065310e-01
+Donor     +6.4565423e+20  +1.6721147e-01
+Donor     +7.5857758e+20  +1.7402714e-01
+Donor     +8.9125094e+20  +1.8110807e-01
+Donor     +1.0471285e+21  +1.8846250e-01
+Donor     +1.2302688e+21  +1.9609897e-01
+Donor     +1.4454398e+21  +2.0402636e-01
+Donor     +1.6982437e+21  +2.1225397e-01
+Donor     +1.9952623e+21  +2.2079164e-01
+Donor     +2.3442288e+21  +2.2964992e-01
+Donor     +2.7542287e+21  +2.3884018e-01
+Donor     +3.2359366e+21  +2.4837493e-01
+Donor     +3.8018940e+21  +2.5826799e-01
+Donor     +4.4668359e+21  +2.6853482e-01
+Donor     +5.2480746e+21  +2.7919283e-01
+Donor     +6.1659500e+21  +2.9026166e-01
+Donor     +7.2443596e+21  +3.0176349e-01
+Donor     +8.5113804e+21  +3.1372335e-01
+Donor     +1.0000000e+22  +3.2616938e-01
+}
 
-mask name= Nptype left= $Xmin right= $LNpPR negative
-photo mask= Nptype thickness= 1.0
-implant Phosphorus dose= 1.5e14 energy= 140.0 tilt= 0.0
-strip photoresist
+eDOSMass {
+    Formula = 1
+    a = +1.905e-01
+    ml = +9.163e-01
+}
 
-mask name= Ppptype left= $Xmin right= $LPNpp 
-photo mask= Pptype thickness= 1.0
-implant Boron dose= 3.0e15 energy= 10.0 tilt= 0.0
-strip photoresist
+DopingDependence {
+  formula=1,1 #[1]
+  mumin1=68.5,44.9 #[cm^2/Vs]
+  mumin2=68.5,0.0 #[cm^2/Vs]
+  mu1=56.1,29 #[cm^2/Vs]
+  Pc=0.0000e+00,9.2300e+16 #[cm^3]
+  Cr=9.2000e+16,2.2300e+17 #[cm^3]
+  Cs=3.4100e+20,6.1000e+20 #[cm^3]
+  alpha=0.711,0.719 #[1]
+  beta=1.98,2 #[1]
+}
 
-mask name= Npptype left= $Xmin right= $Ymax-$LPNpp negative
-photo mask= Nptype thickness= 1.0
-implant Phosphorus dose= 3.0e15 energy= 30.0 tilt= 0.0
-strip photoresist
-#diffuse temperature= 1050 time= 1<s>
+Scharfetter { 
+  * tau = taumin + ( taumax - taumin ) / ( 1 + ( N/Nref )^gamma)
+  * tau(T) = tau * ( (T/300)^Talpha )          (TempDep)
+  * tau(T) = tau * exp( Tcoeff * ((T/300)-1) ) (ExpTempDep)
+	taumin	= 0.0000e+00 ,	0.0000e+00	# [s]
+ 	taumax	= 1057e-06 ,	1057e-06 	# [s]
+ 	Nref	= 1.9000e+16 ,	1.9000e+16	# [cm^(-3)]
+ 	gamma	= 1.739 ,	1.739	# [1]
+	Talpha	= -1.5000e+00 ,	-1.5000e+00	# [1]
+	Tcoeff	= 2.55 ,	2.55	# [1]
+	Etrap	= 0.0000e+00	# [eV]
+}
 
-temp_ramp name= ANNL time= 15<s> temp= 750.0  ramprate= 20
-temp_ramp name= ANNL time= 12<s> temp= 1050.0 
-temp_ramp name= ANNL time= 20<s> temp= 1050.0 ramprate= -15.0
-diffuse temp_ramp= ANNL
+Auger { 
+  * R_Auger = ( C_n n + C_p p ) ( n p - ni_eff^2)
+  * with C_n,p = (A + B (T/T0) + C (T/T0)^2) (1 + H exp(-{n,p}/N0))
+	A	= 2.8e-31 ,	7.9e-32	# [cm^6/s]
+	B	= 0,	1.24e-32	# [cm^6/s]
+	C	= 0 ,	3.231e-32	# [cm^6/s]
+	H	= 8 ,	8 # [1]
+	N0	= 2.5e+17 ,	2.5e+17	# [cm^(-3)]
+}
 
-deposit material= {Oxide}   type= fill  coord= -1.0
 
-mask name= CTmask segments= { $Ymin $Ymin+0.15 $Ymin+0.15+$Lct $Ymax-0.15-$Lct $Ymax-0.15 $Ymax} negative
-photo mask= CTmask thickness= 1.0
-etch material= {Oxide} type= anisotropic thickness= 1.0*1.1
-strip photoresist
-
-deposit material= {Tungsten}   type= fill  coord= -1.0
-
-contact name= "Cpp"  point  x= -0.5 y= $Ymin+0.15+$Lct*0.5 Tungsten replace
-contact name= "Cnp"  point  x= -0.5 y= $Ymax-0.15-$Lct*0.5 Tungsten replace
+ComplexRefractiveIndex
+{ *  Complex refractive index model: n_complex = n + i*k (unitless)
+  *
+  *  with n = n_0 + delta_n_lambda + delta_n_T + delta_n_carr + delta_n_gain
+  *       k = k_0 +                            + delta_k_carr
+  * Mole fraction dependence (real and imag):
+  *    n_0, k_0
+        n_0     = 3.45  # [1]
+        k_0     = 0.0000e+00    # [1]
+  * Wavelength dependence (real and imag):
+  *    Formula 0: delta_n_lambda = Cn_lambda * lambda + Dn_lambda * lambda^2
+  *               delta_k_lambda = Ck_lambda * lambda + Dk_lambda * lambda^2
+  *    Formula 1: Read tabulated values
+  *               NumericalTable (...)
+  *    Formula 2: Read tabulated values from file
+  *               Numerical table = <string>
+       Formula = 1
+       TableInterpolation = linear
+*        Cn_lambda       = 0.0000e+00    # [um^-1]
+*        Dn_lambda       = 0.0000e+00    # [um^-2]
+*        Ck_lambda       = 0.0000e+00    # [um^-1]
+*        Dk_lambda       = 0.0000e+00    # [um^-2]
+  NumericalTable (
+   0.1908	0.84	2.73;
+   0.1984	0.968	2.89;
+   0.2066	1.01	2.909;
+   0.2073	1.036	2.928;
+   0.208	1.046	2.944;
+   0.2087	1.066	2.937;
+   0.2094	1.07	2.963;
+   0.2101	1.083	2.982;
+   0.2109	1.088	2.987;
+   0.2116	1.102	3.005;
+   0.2123	1.109	3.015;
+   0.213	1.119	3.025;
+   0.2138	1.133	3.045;
+   0.2145	1.139	3.061;
+   0.2153	1.155	3.073;
+   0.216	1.164	3.086;
+   0.2168	1.175	3.102;
+   0.2175	1.18	3.112;
+   0.2183	1.195	3.135;
+   0.2191	1.211	3.15;
+   0.2198	1.222	3.169;
+   0.2206	1.235	3.19;
+   0.2214	1.247	3.206;
+   0.2222	1.265	3.228;
+   0.223	1.28	3.245;
+   0.2238	1.299	3.267;
+   0.2246	1.319	3.285;
+   0.2254	1.34	3.302;
+   0.2263	1.362	3.319;
+   0.2271	1.389	3.334;
+   0.2279	1.416	3.35;
+   0.2228	1.445	3.359;
+   0.2296	1.471	3.366;
+   0.2305	1.502	3.368;
+   0.2313	1.526	3.368;
+   0.2322	1.548	3.364;
+   0.2311	1.566	3.358;
+   0.2339	1.579	3.353;
+   0.2348	1.585	3.346;
+   0.2357	1.59	3.344;
+   0.2366	1.591	3.344;
+   0.2375	1.592	3.347;
+   0.2384	1.589	3.354;
+   0.2394	1.586	3.363;
+   0.2403	1.582	3.376;
+   0.2412	1.579	3.389;
+   0.2422	1.573	3.408;
+   0.2431	1.571	3.429;
+   0.2441	1.57	3.451;
+   0.245	1.569	3.477;
+   0.246	1.568	3.504;
+   0.247	1.569	3.533;
+   0.248	1.57	3.565;
+   0.249	1.575	3.598;
+   0.25	1.58	3.632;
+   0.251	1.584	3.67;
+   0.252	1.591	3.709;
+   0.253	1.597	3.749;
+   0.2541	1.608	3.789;
+   0.2551	1.618	3.835;
+   0.2562	1.629	3.88;
+   0.2572	1.643	3.928;
+   0.2583	1.658	3.979;
+   0.2594	1.673	4.031;
+   0.2605	1.692	4.088;
+   0.2616	1.713	4.149;
+   0.2627	1.737	4.211;
+   0.2638	1.764	4.278;
+   0.2649	1.794	4.35;
+   0.2661	1.831	4.426;
+   0.2672	1.874	4.506;
+   0.2684	1.927	4.59;
+   0.2695	1.988	4.678;
+   0.2707	2.059	4.764;
+   0.2719	2.14	4.849;
+   0.2731	2.234	4.933;
+   0.2743	2.339	5.011;
+   0.2755	2.451	5.082;
+   0.2768	2.572	5.148;
+   0.278	2.7	5.206;
+   0.2792	2.833	5.257;
+   0.2805	2.974	5.304;
+   0.2818	3.12	5.344;
+   0.2831	3.277	5.381;
+   0.2844	3.444	5.414;
+   0.2857	3.634	5.435;
+   0.287	3.849	5.439;
+   0.2883	4.086	5.395;
+   0.2897	4.318	5.301;
+   0.291	4.525	5.158;
+   0.2924	4.686	4.989;
+   0.2938	4.805	4.812;
+   0.2952	4.888	4.639;
+   0.2966	4.941	4.48;
+   0.298	4.977	4.335;
+   0.2995	4.999	4.204;
+   0.3009	5.012	4.086;
+   0.3024	5.02	3.979;
+   0.3039	5.021	3.885;
+   0.3054	5.02	3.798;
+   0.3069	5.018	3.72;
+   0.3084	5.015	3.65;
+   0.31	5.01	3.587;
+   0.3115	5.009	3.529;
+   0.3131	5.01	3.477;
+   0.3147	5.009	3.429;
+   0.3163	5.012	3.386;
+   0.3179	5.016	3.346;
+   0.3195	5.021	3.31;
+   0.3212	5.029	3.275;
+   0.3229	5.04	3.242;
+   0.3246	5.052	3.211;
+   0.3263	5.065	3.182;
+   0.328	5.079	3.154;
+   0.3297	5.095	3.128;
+   0.3315	5.115	3.103;
+   0.3333	5.134	3.079;
+   0.3351	5.156	3.058;
+   0.3369	5.179	3.039;
+   0.3388	5.204	3.021;
+   0.3406	5.231	3.007;
+   0.3425	5.261	2.995;
+   0.3444	5.296	2.987;
+   0.3463	5.336	2.983;
+   0.3483	5.383	2.984;
+   0.3502	5.442	2.989;
+   0.3522	5.515	2.999;
+   0.3542	5.61	3.014;
+   0.3563	5.733	3.026;
+   0.3583	5.894	3.023;
+   0.3604	6.089	2.982;
+   0.3625	6.308	2.881;
+   0.3647	6.522	2.705;
+   0.3668	6.695	2.456;
+   0.369	6.796	2.169;
+   0.3712	6.829	1.87;
+   0.3734	6.799	1.577;
+   0.3757	6.709	1.321;
+   0.378	6.585	1.11;
+   0.3803	6.452	0.945;
+   0.3827	6.316	0.815;
+   0.385	6.185	0.714;
+   0.3875	6.062	0.63;
+   0.3899	5.948	0.561;
+   0.3924	5.842	0.505;
+   0.3949	5.744	0.456;
+   0.3974	5.654	0.416;
+   0.4	5.57	0.387;
+   0.4025	5.493	0.355;
+   0.4052	5.42	0.329;
+   0.4078	5.349	0.313;
+   0.4105	5.284	0.291;
+   0.4133	5.222	0.269;
+   0.4161	5.164	0.255;
+   0.4189	5.109	0.244;
+   0.4217	5.058	0.228;
+   0.4246	5.009	0.211;
+   0.4275	4.961	0.203;
+   0.4305	4.916	0.194;
+   0.4335	4.872	0.185;
+   0.4366	4.831	0.185;
+   0.4397	4.791	0.17;
+   0.4428	4.753	0.163;
+   0.446	4.718	0.149;
+   0.4492	4.682	0.149;
+   0.4525	4.648	0.133;
+   0.4558	4.615	0.131;
+   0.4592	4.583	0.13;
+   0.4626	4.553	0.131;
+   0.4661	4.522	0.134;
+   0.4696	4.495	0.12;
+   0.4732	4.466	0.12;
+   0.4769	4.442	0.09;
+   0.4806	4.416	0.094;
+   0.4843	4.391	0.083;
+   0.4881	4.367	0.079;
+   0.492	4.343	0.077;
+   0.4959	4.32	0.073;
+   0.4999	4.298	0.073;
+   0.504	4.277	0.066;
+   0.5081	4.255	0.072;
+   0.5123	4.235	0.06;
+   0.5166	4.215	0.06;
+   0.5209	4.196	0.056;
+   0.5254	4.177	0.053;
+   0.5299	4.159	0.043;
+   0.5344	4.14	0.045;
+   0.5391	4.123	0.048;
+   0.5438	4.106	0.044;
+   0.5486	4.089	0.044;
+   0.5535	4.073	0.032;
+   0.5585	4.057	0.038;
+   0.5636	4.042	0.032;
+   0.5687	4.026	0.034;
+   0.574	4.012	0.03;
+   0.5794	3.997	0.027;
+   0.5848	3.983	0.03;
+   0.5904	3.969	0.03;
+   0.5961	3.956	0.027;
+   0.6019	3.943	0.025;
+   0.6078	3.931	0.025;
+   0.6138	3.918	0.024;
+   0.6199	3.906	0.022;
+   0.6262	3.893	0.022;
+   0.6326	3.882	0.019;
+   0.6391	3.87	0.018;
+   0.6458	3.858	0.017;
+   0.6526	3.847	0.016;
+   0.6595	3.837	0.016;
+   0.6666	3.826	0.015;
+   0.6738	3.815	0.014;
+   0.6812	3.805	0.013;
+   0.6888	3.796	0.013;
+   0.6965	3.787	0.013;
+   0.7045	3.778	0.012;
+   0.7126	3.768	0.011;
+   0.7208	3.761	0.011;
+   0.7293	3.752	0.01;
+   0.738	3.745	0.01;
+   0.7469	3.736	9.0000e-03;
+   0.756	3.728	9.0000e-03;
+   0.7653	3.721	8.0000e-03;
+   0.7749	3.714	8.0000e-03;
+   0.7847	3.705	7.0000e-03;
+   0.7948	3.697	7.0000e-03;
+   0.8051	3.688	6.0000e-03;
+   0.8157	3.681	6.0000e-03;
+   0.8266	3.673	5.0000e-03;
+0.830	3.662	4.2734E-03;
+0.840	3.656	3.9505E-03;
+0.850	3.650	3.6188E-03;
+0.860	3.644	3.2850E-03;
+0.870	3.638	2.9908E-03;
+0.880	3.632	2.6821E-03;
+0.890	3.626	2.4293E-03;
+0.900	3.620	2.1916E-03;
+0.910	3.614	1.9697E-03;
+0.920	3.608	1.7571E-03;
+0.930	3.602	1.5541E-03;
+0.940	3.597	1.3689E-03;
+0.950	3.592	1.1869E-03;
+0.960	3.587	1.0237E-03;
+0.970	3.582	8.7997E-04;
+0.980	3.578	7.4788E-04;
+0.990	3.574	6.2395E-04;
+1.000	3.570	5.0930E-04;
+1.010	3.566	4.1071E-04;
+1.020	3.563	3.2386E-04;
+1.030	3.560	2.4753E-04;
+1.040	3.557	1.8704E-04;
+1.050	3.554	1.3620E-04;
+1.060	3.551	9.3631E-05;
+1.070	3.548	6.8118E-05;
+1.080	3.546	5.3285E-05;
+1.090	3.544	4.0768E-05;
+1.100	3.541	3.0637E-05;
+1.110	3.539	2.3849E-05;
+1.120	3.537	1.7825E-05;
+1.130	3.534	1.3488E-05;
+1.140	3.532	9.0718E-06;
+1.150	3.530	6.2230E-06;
+1.160	3.528	3.8770E-06;
+1.170	3.526	2.0483E-06;
+1.180	3.524	6.1036E-07;
+1.190	3.522	3.4091E-07;
+1.200	3.520	2.1008E-07;
+1.210	3.528	1.2518E-07;
+1.220	3.516	7.9609E-08;
+1.230	3.515	4.6004E-08;
+1.240	3.513	2.3682E-08;
+1.250	3.511	9.9472E-09;
+1.260	3.510	3.6096E-09;
+1.270	3.508	2.0213E-09;
+1.280	3.507	1.2223E-09;
+1.290	3.506	7.2885E-10;
+1.300	3.504	4.6553E-10;
+1.310	3.503	2.8147E-10;
+1.320	3.501	1.6807E-10;
+1.330	3.500	8.4670E-11;
+1.340	3.498	3.7322E-11;
+1.350	3.497	1.8263E-11;
+1.360	3.496	1.0823E-11;
+1.370	3.495	7.3044E-12;
+1.380	3.493	4.9418E-12;
+1.390	3.492	2.7653E-12;
+1.400	3.491	2.2282E-12;
+1.410	3.490	1.6831E-12;
+1.420	3.489	9.6050E-13;
+1.430	3.488	8.7623E-13;
+1.440	3.487	4.8128E-13;
+1.450	3.486	3.6924E-13;
+   10	3.42	1.0000e-13;
+   10.001	3.42	1.0000e-13;
+   10.002	3.42	1.0000e-13;
+  )
+}
+}
+Material="Al2O3" {
+	Epsilon
+	  {
+		* Ratio of the permittivities of material and vacuum
+		epsilon = 8.6
 	
-struct tdr= n@node@ !Gas
+	  }
+	 
+	
+	Bandgap
+	{ * Eg = Eg0 + dEg0 + alpha Tpar^2 / (beta + Tpar) - alpha T^2 / (beta + T)
+	  * dEg0(<bgn_model_name>) is a band gap correction term.  It is used together with 
+	  * an appropriate BGN model, if this BGN model is chosen in Physics section 
+	  * Parameter 'Tpar' specifies the value of lattice 
+	  * temperature, at which parameters below are defined
+	  * Chi0 is electron affinity.
+		Chi0	= 2.5 # [eV]
+		* ?Bgn2Chi	= 0.5	#
+		Eg0	= 6.8	# [eV]
+		Tpar	= 3.0000e+02	# [K] 
+			* no temperature support for now.
+			alpha   = 0.0
+			beta    = 0.0
+	}
+}
 
-exit
+Material= "HZO" {
+	Epsilon
+	  {
+		* Ratio of the permittivities of material and vacuum
+		epsilon = 10
+	
+	  }
+	 
+	
+	Bandgap
+	{ * Eg = Eg0 + dEg0 + alpha Tpar^2 / (beta + Tpar) - alpha T^2 / (beta + T)
+	  * dEg0(<bgn_model_name>) is a band gap correction term.  It is used together with 
+	  * an appropriate BGN model, if this BGN model is chosen in Physics section 
+	  * Parameter 'Tpar' specifies the value of lattice 
+	  * temperature, at which parameters below are defined
+	  * Chi0 is electron affinity.
+		Chi0	= 4.3 # [eV]
+		* ?Bgn2Chi	= 0.5	#
+		Eg0	= 3.5	# [eV]
+		Tpar	= 3.0000e+02	# [K] 
+			* no temperature support for now.
+			alpha   = 0.0
+			beta    = 0.0
+	}
+	
+	eDOSMass
+	{
+	  * For effective mass specification Formula1 (me approximation):
+	  * or Formula2 (Nc300) can be used :
+		Formula	= 1	# [1]
+	  * Formula1:
+	  * me/m0 = [ (6 * mt)^2 *  ml ]^(1/3) + mm
+	  * mt = a[Eg(0)/Eg(T)] 
+	  * Nc(T) = 2(2pi*kB/h_Planck^2*me*T)^3/2 = 2.5094e19 ((me/m0)*(T/300))^3/2 
+		a	= 0.0000e+00	# [1]
+		ml	= 0.0000e+00	# [1]
+		mm	= 0.42	# [1]
+	}
+	
+	hDOSMass
+	{
+	  * For effective mass specification Formula1 (mh approximation):
+	  * or Formula2 (Nv300) can be used :
+		Formula	= 1	# [1]
+	  * Formula1:
+	  * mh =  m0*{[(a+bT+cT^2+dT^3+eT^4)/(1+fT+gT^2+hT^3+iT^4)]^(2/3) + mm}
+	  * Nv(T) = 2(2pi*kB/h_Planck^2*mh*T)^3/2 = 2.5094e19 ((mh/m0)*(T/300))^3/2 
+		a	= 0	# [1]
+		b	= 0	# [K^-1]
+		c	= 0	# [K^-2]
+		d	= 0	# [K^-3]
+		e	= 0	# [K^-4]
+		f	= 0	# [K^-1]
+		g	= 0	# [K^-2]
+		h	= 0	# [K^-3]
+		i	= 0	# [K^-4]
+		mm	= 1	# [1]
+	}	
+
+	ConstantMobility:
+	{ * mu_const = mumax (T/T0)^(-Exponent)
+		mumax	= 40 ,	5	# [cm^2/(Vs)]
+		Exponent	= 2.5 ,	2.2	# [1]
+		mutunnel	= 0.05 ,	0.05	# [cm^2/(Vs)]
+	}
+	
+}
+
+Material="LiF" {
+	Epsilon
+	  {
+		* Ratio of the permittivities of material and vacuum
+		epsilon = 9.0
+	
+	  }
+	 
+	
+	Bandgap
+	{ * Eg = Eg0 + dEg0 + alpha Tpar^2 / (beta + Tpar) - alpha T^2 / (beta + T)
+	  * dEg0(<bgn_model_name>) is a band gap correction term.  It is used together with 
+	  * an appropriate BGN model, if this BGN model is chosen in Physics section 
+	  * Parameter 'Tpar' specifies the value of lattice 
+	  * temperature, at which parameters below are defined
+	  * Chi0 is electron affinity.
+		Chi0	= 0.6 # [eV]
+		* ?Bgn2Chi	= 0.5	#
+		Eg0	= 13.6	# [eV]
+		Tpar	= 3.0000e+02	# [K] 
+			* no temperature support for now.
+			alpha   = 0.0
+			beta    = 0.0
+	}
+}
+
+
+#RegionInterface="frontArc/substrate" {
+#  SurfaceRecombination {
+#    S0 = 1000, 1000 * [cm/s]
+#    Sref = 0 * [1]
+#  }
+#} * end RegionInterface="frontArc/substrate" 
+#-----------------------------------------------------------
+; Reinitializing SDE 
+(sde:clear)
+(sde:set-process-up-direction "-z")
+
+(sdegeo:create-rectangle(position 0 0 0)(position 0.3 10 0) "Silicon" "RpSi")
+(sdegeo:create-rectangle(position 0.3 0 0)(position 150.3 10 0) "Silicon" "RnSi")	
+(sdegeo:create-rectangle(position 150.3 0 0)(position 150.301 10 0) "Oxide" "Rox")
+(sdegeo:create-rectangle(position 150.301 0 0)(position 150.308 10 0) "HZO" "RHZO")
+(sdegeo:create-rectangle(position 150.308 0 0)(position 150.3092 10 0) "LiF" "RLF")
+(define n.metal (sdegeo:create-rectangle(position 150.3092 0 0)(position 150.5092 10 0) "Aluminum" "RAl"))
+
+(sdegeo:create-rectangle(position 0 0 0)(position -0.004 10 0) "Al2O3" "RALO")
+(sdegeo:create-rectangle(position -0.004 0 0)(position -0.074 10 0) "Nitride" "RNIT")
+
+(sdegeo:create-rectangle(position 0 2 0)(position 0.3 4 0) "Silicon" "RppSil")
+(sdegeo:create-rectangle(position 0 6 0)(position 0.3 8 0) "Silicon" "RppSir")
+
+(define pl.metal (sdegeo:create-rectangle(position 0 2 0)(position -0.074 4 0) "Silver" "RAgl"))
+(define pr.metal (sdegeo:create-rectangle(position 0 6 0)(position -0.074 8 0) "Silver" "RAgr"))
+
+(sdedr:define-constant-profile "Const.P" "pSiliconActiveConcentration" 1e17)
+(sdedr:define-constant-profile-region "PlaceCD.P" "Const.P" "RpSi")
+
+(sdedr:define-constant-profile "Const.N" "nSiliconActiveConcentration" 1e15)
+(sdedr:define-constant-profile-region "PlaceCD.N" "Const.N" "RnSi")
+
+(sdedr:define-constant-profile "Const.PP" "pSiliconActiveConcentration" 1e20)
+(sdedr:define-constant-profile-region "PlaceCD.PPL" "Const.PP" "RppSil")
+(sdedr:define-constant-profile-region "PlaceCD.PPR" "Const.PP" "RppSir")
+
+; Defining contacts 
+
+(sdegeo:set-contact pl.metal "pContact" "remove")  
+(sdegeo:set-contact pr.metal "pContact" "remove")  
+(sdegeo:set-contact n.metal  "nContact" "remove")  
+
+
+;-------------------------------------------------------------------------------
+;-- Specify mesh refinements ---------------------------------------------------
+;-------------------------------------------------------------------------------
+
+; Defining regional refinements
+(sdedr:define-refeval-window "Rall" "Rectangle"
+                (position -0.1 0 0) (position 151 10 0))
+(sdedr:define-refinement-size "Ref.all" 2.0 0.2 1.0 0.1)
+(sdedr:define-refinement-function "Ref.all"  "DopingConcentration" "MaxTransDiff" 1) 
+(sdedr:define-refinement-function "Ref.all" "MaxLenInt" "Silicon" "Al2O3" 0.001 1.3 "DoubleSide" )
+(sdedr:define-refinement-function "Ref.all" "MaxLenInt" "Silicon" "Oxide" 0.001 1.3 "DoubleSide" )
+(sdedr:define-refinement-function "Ref.all" "MaxLenInt" "Oxide" "HZO" 0.001 1.3 "DoubleSide" )
+(sdedr:define-refinement-function "Ref.all" "MaxLenInt" "HZO" "LiF" 0.001 1.3 "DoubleSide" )
+(sdedr:define-refinement-placement "RPall" "Ref.all" "Rall")   
+
+; Meshing the device structure
+(sde:build-mesh "" "n@node@")
+
 
 #----------------------------------------------------------------------------------
 
-#setdep @node|sprocess@
+* The following input has been generated by the Sentaurus Device Wizard
+* Input template for Solar Cells > 2D Silicon Solar Cell > I-V under the light condition
+
+
+##------------------------------------------------------------------------------
+##  Example level: basic
+##
+##  This example demonstrates the 2D Si Solar Cell device simulation
+##  under the sun illuminatioon condition using the AM1.5g spectra.
+##  The simulation is performed in steady-state by ramping up the electrode bias
+##  attached to the p-doped region.
+##  The optical signal propagation for each individual wavelength is computed
+##  using the TMM method.
+##  The integrated generation rate resulting from the illumination spectrum is 
+##  only computed once at the beginning of the simulation, when the optical 
+##  problem is solved and remains constant till the end of the simulation. 
+##------------------------------------------------------------------------------
 
 File {
-  Grid      = "@tdr@"  
-  Parameter = "@parameter@"
-  Plot      = "@tdrdat@"
-  Current   = "@plot@"
-  Output    = "@log@"
-  
-}
-
-Electrode {
-  { Name="Cpp"    Voltage=0.0 }
-  { Name="Cnp"     Voltage=0.0 }
-
-}
-
-Physics {Fermi}
-
-Physics (Material= Silicon) {	
-	Mobility (
-    HighFieldSaturation
-    DopingDependence
-	)
-    Recombination(SRH)
-    EffectiveIntrinsicDensity(OldSlotboom)
-    Recombination( SRH( DopingDep ) Band2Band(Model= Hurkx) Avalanche(Okuto) )      
-}
-
-Plot{
-  eDensity hDensity
-  TotalCurrent/Vector eCurrent/Vector hCurrent/Vector
-  eMobility hMobility
-  eVelocity hVelocity
-  eQuasiFermi hQuasiFermi
-  eTemperature Temperature * hTemperature
-  ElectricField/Vector Potential SpaceCharge
-  Doping DonorConcentration AcceptorConcentration
-  SRH Band2Band * Auger
-  AvalancheGeneration eAvalancheGeneration hAvalancheGeneration
-  eGradQuasiFermi/Vector hGradQuasiFermi/Vector
-  eEparallel hEparallel eENormal hENormal
-  BandGap 
-  BandGapNarrowing
-  Affinity
-  ConductionBand ValenceBand
-  eBarrierTunneling hBarrierTunneling * BarrierTunneling
-  eTrappedCharge  hTrappedCharge
-  eGapStatesRecombination hGapStatesRecombination
-  eDirectTunnel hDirectTunnel
-  
-}
-
-Math {
-  Extrapolate
-  Derivatives
-  RelErrControl
-  Digits=5
-  RHSmin=1e-10
-  Notdamped=100
-  Iterations=50
-  DirectCurrent
-  ExitOnFailure
-  
-  * Please uncomment if you have 8 CPUs or more
-  **NumberOfThreads= 8
-  
-}
-
-Solve {
-  Coupled { Poisson }
-  Coupled ( Iterations= 100 LineSearchDamping= 1e-8 ){ Poisson } 
-  Coupled { Poisson Electron Hole }
-  
-  NewCurrentPrefix= "IV_" 
-  Quasistationary( 
-    InitialStep= 1e-2 Increment= 1.3 
-    MinStep= 1e-6 MaxStep= 0.05 
-    Goal { Name="Cpp" Voltage= @Vd@ } 
-  ){ Coupled { Poisson Electron Hole } }
-}
-
-#----------------------------------------------------------------------------------
-
-#----------------------------------------------------------------------#
-load_library extract
-lib::SetInfoDef 1
-#----------------------------------------------------------------------#
-set N     @node@
-set i     @node:index@
-
-set Weff  1.0
-set Vd1 4
-set Vd2 5
-
-#- Automatic alternating color assignment tied to node index
-#----------------------------------------------------------------------#
-set COLORS  [list green blue red orange magenta violet brown]
-set NCOLORS [llength $COLORS]
-set color   [lindex  $COLORS [expr $i%$NCOLORS]]
-
-#- Plotting IdVg
-#----------------------------------------------------------------------#
-echo "#########################################"
-echo "Plotting IV curve"
-echo "#########################################"
-load_file @[relpath IV_@plot@]@ -name PLT_IV($N)
-
-if {[lsearch [list_plots] Plot_IdVg] == -1} {
-	create_plot -1d -name Plot_IdVg
-}
-select_plots Plot_IdVg
-
-set Vp [get_variable_data "Cpp OuterVoltage" -dataset PLT_IV($N)]
-set Ip [get_variable_data "Cpp TotalCurrent" -dataset PLT_IV($N)]
-
-create_curve -name IdVgIV($N) -dataset PLT_IV($N) \
-	-axisX "Cpp OuterVoltage" -axisY "Cpp TotalCurrent"
-	
-	
-set_curve_prop IdVgIV($N) -label "IV" \
-	-color $color -line_style solid -line_width 3 \
-	-markers_type circle -markers_size 5 -show_markers
-
-ext::ExtractValue -out Id1 -name "noprint" -x $Vp -y $Ip -yLog 1 -xo $Vd1
-ext::ExtractValue -out Id2 -name "noprint" -x $Vp -y $Ip -yLog 1 -xo $Vd2
-
-set Ron [expr (($Vd2-$Vd1)/($Id2-$Id1))]
-puts "DOE: Ron [format %.3f $Ron]"
-
-#----------------------------------------------------------------------------------
-
-
-#setdep @node|sprocess@
-
-Device CV {
-
-Electrode {
-	{ Name="Cpp"    Voltage=0.0 }
-	{ Name="Cnp"    Voltage=0.0 }
-          }
-
-File {
-   * input files:
-   Grid=    "@tdr@" 
-   Parameter= "@parameter@"
-   * output files:
-   Plot=    "@tdrdat@"
-   Current= "@plot@"
-}
-
-Physics{
-   Fermi     
-}
-
-Physics (Material= Silicon) {
-	Mobility (
-    HighFieldSaturation
-    DopingDependence
-	)
-    Recombination(SRH)
-    EffectiveIntrinsicDensity(OldSlotboom)
-    Recombination( SRH( DopingDep ) Band2Band(Model= Hurkx) Avalanche(Okuto) )  
-}
-
-}
-* End of Device
-
-File {
-        ACExtract= "@acplot@"
-        output=   "@log@" 
-     }
-
-Plot{
-  eDensity hDensity
-  TotalCurrent/Vector eCurrent/Vector hCurrent/Vector
-  eMobility hMobility
-  eVelocity hVelocity
-  eQuasiFermi hQuasiFermi
-  eTemperature hTemperature Temperature 
-  ElectricField/Vector Potential SpaceCharge
-  Doping DonorConcentration AcceptorConcentration
-  SRH Band2Band 
-  AvalancheGeneration eAvalancheGeneration hAvalancheGeneration
-  eGradQuasiFermi/Vector hGradQuasiFermi/Vector
-  eEparallel hEparallel eENormal hENormal
-  BandGap 
-  BandGapNarrowing
-  Affinity
-  ConductionBand ValenceBand
-  eBarrierTunneling hBarrierTunneling * BarrierTunneling
-  eTrappedCharge  hTrappedCharge
-  eGapStatesRecombination hGapStatesRecombination
-  eDirectTunnel hDirectTunnel
+  Grid=     "n@node|sde@_msh.tdr"
+  Parameter= "@parameter@"
+  IlluminationSpectrum= "@pwd@/am15g.txt"
    
+  Plot=   "@tdrdat@"
+  Current="@plot@"
+  Output= "@log@"
+  SpectralPlot= "n@node@_spec"
+  OpticsOutput= "n@node@_optics"
+}
+Electrode {   
+  { name="nContact" voltage=0.0 }
+  { name="pContact" voltage=0.0 }
+}
+Physics {
+  Temperature=  300.00
+  AreaFactor=  1.7e+08
+  Fermi
+  EffectiveIntrinsicDensity(BandGapNarrowing(delAlamo))
+  Recombination (
+    SRH (
+      DopingDependence
+    )
+    Auger()
+  )
+  Mobility (
+    DopingDependence(Masetti)
+    Enormal(
+      Lombardi
+    )
+  )
+  Optics (
+    ComplexRefractiveIndex (WavelengthDep(Real Imag))
+    OpticalGeneration (
+      QuantumYield(StepFunction(EffectiveBandgap))
+      
+      ComputeFromSpectrum(
+        Select(
+	      Parameter=("Wavelength")
+          Condition="$Wavelength <= 1.22"
+        )
+        keepSpectralData
+      )
+    )
+    Excitation (
+      Polarization = 0.5
+      Window ( 
+        Origin = (0,-0.075) 
+        Line(x1=5 x2=600)
+        WeightedAPDIntegration 
+      )
+    )
+    OpticalSolver (
+      TMM (
+        LayerStackExtraction ()
+        IntensityPattern = Envelope
+      ) 
+    )
+  )
+}
+Physics (regionInterface="frontArc/substrate") {
+  Recombination(surfaceSRH)
+} 
+CurrentPlot{
+  OpticalGeneration(Integrate(Semiconductor) ) 
+  AbsorbedPhotonDensity(Integrate(Semiconductor) ) 
+  SRH(Integrate(Semiconductor))
+  Auger(Integrate(Semiconductor))
+}
+Plot {
+  DopingConcentration
+  eQuasiFermiPotential hQuasiFermiPotential 
+  BandGap ConductionBandEnergy ValenceBandEnergy 
+  eCurrent/Vector hCurrent/Vector current/vector
+  SpaceCharge eDensity hDensity
+  Potential CurrentPotential
+  eMobility hMobility
+  SRH Auger TotalRecombination SurfaceRecombination
+  eLifeTime hLifeTime
+  EffectiveIntrinsicDensity IntrinsicDensity
+  OpticalIntensity
+  OpticalGeneration
+  ComplexRefractiveIndex
 }
 Math {
+  Digits= 5
+  Iterations= 20
   Extrapolate
-  Derivatives
-  RelErrControl
-  Digits= 5  
-  Notdamped= 100
-  Iterations= 25
-  ExitOnFailure 
-  RelTermMinDensity= 2e8
-  DrForceRefDens= 1e12
-                                   
-  * Please uncomment if you have 8 CPUs or more
-  **Number_of_Threads= 8
+  Transient= BE
+  ComputeGradQuasiFermiAtContacts= UseQuasiFermi
+  ExitOnFailure
+  RefDens_eGradQuasiFermi_ElectricField_HFS= 1.000e+12
+  RefDens_hGradQuasiFermi_ElectricField_HFS= 1.000e+12
+  Method= Blocked
+  SubMethod= ParDiSo( )
+  BreakCriteria {
+    Current (Contact = "nContact" minval = -1e-3)
+  }
+  -CheckUndefinedModels
+}
+Solve{
+  NewCurrentPrefix = "tmp_"
+  Coupled (Iterations=100) { Poisson }
+  NewCurrentPrefix = "" 
+  Coupled (Iterations=100) { Poisson Electron Hole }
+  
+  Quasistationary ( 
+	InitialStep=2e-1 MaxStep =2e-1 MinStep = 1e-5
+	Goal{ voltage = 0.45 Name="pContact" }
+  ) { Coupled { Poisson Electron Hole } } 
+	
+  Quasistationary ( 
+	InitialStep=4e-2 MaxStep =4e-2 MinStep = 1e-5
+	Goal{ voltage = 0.8 Name="pContact" }
+  ) { Coupled { Poisson Electron Hole } }
+  
+  System("rm -f tmp*")           
 }
 
-System {
-    CV cv(Cpp=1 Cnp=2 )
-    Vsource_pset  vp(1 0) { dc= 0}
-    Vsource_pset  vn(2 0) { dc= 0}
-     }
+#---------------------------------------------------------------------------
+* The following input has been generated by the Sentaurus Device Wizard
+* Input template for Solar Cells > 2D Silicon Solar Cell > I-V under the light condition
 
-Solve {
-#- Creating initial guess:                            
-   Coupled(Iterations= 1000 LineSearchDamping= 1e-8){ Poisson } 
-   Coupled{ Poisson Electron Hole } 
-                                     
-##   Quasistationary( 
-##      InitialStep= 1e-2 Increment= 1.5 
-##      MinStep= 1e-5 MaxStep= 0.1 
-##      Goal { Parameter= vp.dc Voltage= 0 } 
-##   ){ Coupled { Poisson Electron Hole } }
 
-   NewCurrentPrefix="" 
-   Quasistationary( 
-      DoZero 
-      InitialStep= 1e-2 Increment= 1.5 
-      MinStep= 1e-5 MaxStep= 0.01
-      Goal { Parameter= vp.dc Voltage= 0.01 } 
-   ){ ACCoupled (           
-       StartFrequency= 1e6 EndFrequency= 1e6 NumberOfPoints= 1 Decade 
-       Node(1 2) Exclude(vp vn) 
-       ACCompute (Time= (Range = (0 1)  Intervals= 50)) 
-      ){ Poisson Electron Hole } 
-   }
+##------------------------------------------------------------------------------
+##  Example level: basic
+##
+##  This example demonstrates the 2D Si Solar Cell device simulation
+##  under the sun illuminatioon condition using the AM1.5g spectra.
+##  The simulation is performed in steady-state by ramping up the electrode bias
+##  attached to the p-doped region.
+##  The optical signal propagation for each individual wavelength is computed
+##  using the TMM method.
+##  The integrated generation rate resulting from the illumination spectrum is 
+##  only computed once at the beginning of the simulation, when the optical 
+##  problem is solved and remains constant till the end of the simulation. 
+##------------------------------------------------------------------------------
+
+File {
+  Grid=     "n@node|sde@_msh.tdr"
+  Parameter= "@parameter@"
+  IlluminationSpectrum= "@pwd@/am15g.txt"
+   
+  Plot=   "@tdrdat@"
+  Current="@plot@"
+  Output= "@log@"
+  SpectralPlot= "n@node@_spec"
+  OpticsOutput= "n@node@_optics"
 }
-##---------------------------------------------------------------------------------
-
-
-#----------------------------------------------------------------------#
-load_library extract
-lib::SetInfoDef 1
-#----------------------------------------------------------------------#
-set N     @node@
-set i     @node:index@
-
-#- Automatic alternating color assignment tied to node index
-#----------------------------------------------------------------------#
-set COLORS  [list green blue red orange magenta violet brown]
-set NCOLORS [llength $COLORS]
-set color   [lindex  $COLORS [expr $i%$NCOLORS]]
-#----------------------------------------------------------------------#
-
-echo "##############################"
-echo "plotting C-V curves"
-echo "##############################"
-load_file @acplot@ -name AC($N)
-
-if {[lsearch [list_plots] Plot_CV] == -1} {
-	create_plot -1d -name Plot_CV
+Electrode {   
+  { name="nContact" voltage=0.0 }
+  { name="pContact" voltage=0.0 }
 }
-select_plots Plot_CV
-
-create_curve -name Cpp($N) -dataset AC($N) -axisX "v(1)" -axisY "c(1,1)"
-
-set_curve_prop Cpp($N) -label "Cpp" \
-	-color $color -line_style solid -line_width 3
-
-set_plot_prop -title "C-V Curves" -title_font_size 16 -show_legend
-set_axis_prop -axis x -title {Voltage [V]} \
-	-title_font_size 16 -label_font_size 14 
-set_axis_prop -axis y -title {Capacitance [F]} \
-	-title_font_size 16 -label_font_size 14 
-set_legend_prop -label_font_size 12 -location bottom_left -label_font_att bold
-
-set Vp  [get_curve_data Cpp($N) -plot Plot_CV -axisX]
-set Cpp [get_curve_data Cpp($N) -plot Plot_CV -axisY]
-
-ext::ExtractValue -out Cj -name "Cj" -x $Vp -y $Cpp -xo 0.0
-
-
+Physics {
+  Temperature=  300.00
+  AreaFactor=  1.7e+08
+  Fermi
+  EffectiveIntrinsicDensity(BandGapNarrowing(delAlamo))
+  Recombination (
+    SRH (
+      DopingDependence
+    )
+    Auger()
+  )
+  Mobility (
+    DopingDependence(Masetti)
+    Enormal(
+      Lombardi
+    )
+  )
+  Optics (
+    ComplexRefractiveIndex (WavelengthDep(Real Imag))
+    OpticalGeneration (
+      QuantumYield(StepFunction(EffectiveBandgap))
+      
+      ComputeFromSpectrum(
+        Select(
+	      Parameter=("Wavelength")
+          Condition="$Wavelength <= 1.22"
+        )
+        keepSpectralData
+      )
+    )
+    Excitation (
+      Polarization = 0.5
+      Window ( 
+        Origin = (0,-0.075) 
+        Line(x1=5 x2=600)
+        WeightedAPDIntegration 
+      )
+    )
+    OpticalSolver (
+      TMM (
+        LayerStackExtraction ()
+        IntensityPattern = Envelope
+      ) 
+    )
+  )
+}
+Physics (regionInterface="frontArc/substrate") {
+  Recombination(surfaceSRH)
+} 
+CurrentPlot{
+  OpticalGeneration(Integrate(Semiconductor) ) 
+  AbsorbedPhotonDensity(Integrate(Semiconductor) ) 
+  SRH(Integrate(Semiconductor))
+  Auger(Integrate(Semiconductor))
+}
+Plot {
+  DopingConcentration
+  eQuasiFermiPotential hQuasiFermiPotential 
+  BandGap ConductionBandEnergy ValenceBandEnergy 
+  eCurrent/Vector hCurrent/Vector current/vector
+  SpaceCharge eDensity hDensity
+  Potential CurrentPotential
+  eMobility hMobility
+  SRH Auger TotalRecombination SurfaceRecombination
+  eLifeTime hLifeTime
+  EffectiveIntrinsicDensity IntrinsicDensity
+  OpticalIntensity
+  OpticalGeneration
+  ComplexRefractiveIndex
+}
+Math {
+  Digits= 5
+  Iterations= 20
+  Extrapolate
+  Transient= BE
+  ComputeGradQuasiFermiAtContacts= UseQuasiFermi
+  ExitOnFailure
+  RefDens_eGradQuasiFermi_ElectricField_HFS= 1.000e+12
+  RefDens_hGradQuasiFermi_ElectricField_HFS= 1.000e+12
+  Method= Blocked
+  SubMethod= ParDiSo( )
+  BreakCriteria {
+    Current (Contact = "nContact" minval = -1e-3)
+  }
+  -CheckUndefinedModels
+}
+Solve{
+  NewCurrentPrefix = "tmp_"
+  Coupled (Iterations=100) { Poisson }
+  NewCurrentPrefix = "" 
+  Coupled (Iterations=100) { Poisson Electron Hole }
+  
+  Quasistationary ( 
+	InitialStep=2e-1 MaxStep =2e-1 MinStep = 1e-5
+	Goal{ voltage = 0.45 Name="pContact" }
+  ) { Coupled { Poisson Electron Hole } } 
+	
+  Quasistationary ( 
+	InitialStep=4e-2 MaxStep =4e-2 MinStep = 1e-5
+	Goal{ voltage = 0.8 Name="pContact" }
+  ) { Coupled { Poisson Electron Hole } }
+  
+  System("rm -f tmp*")           
+}
