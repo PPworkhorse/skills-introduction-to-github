@@ -1,352 +1,363 @@
-(sde:clear)
-(sde:set-process-up-direction "+z")
+## 200V_3.3PITCH_UDSGT------------------------------------------------------------------
+## Global mesh settings and mesh in newly generated layers
+## --------------------------------------------------------------------
+#mgoals accuracy= 1e-4
+#grid set.normal.growth.ratio.2d= 1.6 set.min.normal.size=  0.01
+#pdbSet Grid SnMesh max.lateral.size 1.0
+math coord.ucs
+
+refinebox interface.materials= Silicon
+pdbSet Grid Adaptive 1
+##--adaptive mesh box
+#refinebox name= Global adaptive Silicon \
+#         refine.min.edge= "0.02 0.02" refine.max.edge= "10.0 10.0" \
+#         abs.error=       "Boron=1e15 Arsenic=5e16 Phosphorus=1e15" \
+#         rel.error=       "Boron=0.20 Arsenic=0.20 Phosphorus=0.20" \
+#         max.dose.error=  "Boron=1e10 Arsenic=1e10 Phosphorus=1e10"
+## perp.add.dist and NativeLayerThickness are in cm
+#pdbSet Oxide Grid perp.add.dist 5.0e-7
+#pdbSet Silicon Grid Remove.Dist 2.0e-8
+#pdbSet Grid NativeLayerThickness 1.0e-7
+
+## Using Advanced Calibration models
+AdvancedCalibration
+implant tables=taurus
+
+grid set.min.normal.size= 0.05 \
+     set.normal.growth.ratio.2d= 2.0 \
+     set.max.points= 1000000 set.max.neighbor.ratio= 1e6
 
 
-;device parameter
-(define Lsource 20e-3)
-(define Ldrain Lsource)
-(define Lg 60e-3)
-(define D 20e-3)
-(define Tox 3e-3)
-(define Tgate 6e-3)
+#Split EPI
 
-;structure generation
-(sdegeo:create-rectangle (position 0 0 0) (position Lsource (/ D 2) 0) "Silicon" "R.Source")
-(sdegeo:create-rectangle (position Lsource 0 0) (position (+ Lsource Lg) (/ D 2) 0) "Silicon" "R.Channel")
-(sdegeo:create-rectangle (position (+ Lsource Lg) 0 0) (position (+ Lsource Lg Ldrain) (/ D 2) 0) "Silicon" "R.Drain")
+line y loc=0   spacing= 0.5  tag= left
+line y loc=38 spacing= 0.5  tag= right
+line x loc=14  spacing= 0.5  tag= top
+line x loc=20  spacing= 1.0  tag= bot
 
-(sdegeo:create-rectangle (position Lsource (/ D 2) 0) (position (+ Lsource Lg) (+ (/ D 2) Tox) 0) "HfO2" "R.Gox")
-(sdegeo:create-rectangle (position  Lsource  (+ (/ D 2) Tox) 0) (position (+ Lsource Lg) (+ (/ D 2) Tox Tgate) 0) "PolySilicon" "R.Gate")
+region silicon xlo= top xhi= bot ylo= left yhi= right
+init field= Arsenic resistivity= 0.0013 wafer.orient= 100
 
 
-#(sdegeo:sweep (get-body-list) (position (+ Lsource Lg) 0 0 ) (gvector 1.0 0 0)
-#	(sweep:options "solid" #t "sweep_angle" 360 "rigid" #f "miter_type" "default"))
+diffuse epi time= 5 temperature= 1080 epi.resist= {Arsenic =@epi1_res@} thick=@epi1_thk@<um> 
+diffuse epi time= 5 temperature= 1080 epi.resist= {Arsenic =@epi2_res@} thick=@epi2_thk@<um> 
+diffuse epi time= 5 temperature= 1080 epi.resist= {Arsenic =@epi3_res@} thick=@epi3_thk@<um>
 
-;doping
-(define Nchannel 1e16)
-(define Nsd 5e19)
+refinebox name=Global_Si Silicon       \
+    min= "0 0" max= "20 38"  \
+    xrefine= "0.05 1.0 "                   \
+    yrefine= "0.5 0.5"
 
+grid remesh
 
-(sdedr:define-constant-profile "CP.Channel" "BoronActiveConcentration" Nchannel)
+deposit oxide thickness= 0.03 type= isotropic
 
-(sdedr:define-constant-profile-material "PL.Channel"
-	"CP.Channel" "Silicon")
+deposit oxide thickness= 0.4  type= isotropic
 
+#Split TRENCH
 
-
-(sdedr:define-constant-profile "RF_s" "PhosphorusActiveConcentration" Nsd)
-(sdedr:define-constant-profile-region "RP_s" "RF_s" "R.Source")
-(sdedr:define-constant-profile "RF_d" "PhosphorusActiveConcentration" Nsd)
-(sdedr:define-constant-profile-region "RP_d" "RF_d" "R.Drain")
-
-
-
-;contact
-
-(sdegeo:define-contact-set "Source"  4.0  (color:rgb 1.0 0.0 0.0 ) "##" )
-
-(sdegeo:set-contact 
-	(find-edge-id (position 0 (/ D 3) 0 )) 
-	"Source") 
-
-(sdegeo:define-contact-set "Drain"  4.0  (color:rgb 1.0 0.0 0.0 ) "##" )
-
-(sdegeo:set-contact 
-	(find-edge-id (position  (+ Lsource Lg Ldrain) (/ D 3) 0)) 
-	"Drain") 
+mask  name= TR  segments= {1.4 1.8 4.7 5.1}
+photo mask= TR  thickness= 2
+struct tdr= n@node@_PHCD
 
 
-(sdegeo:define-contact-set "Gate"  4.0  (color:rgb 1.0 0.0 0.0 ) "##" )
-
-(sdegeo:set-contact 
-	(find-body-id (position (/ (+ Lg (* 2 Lsource)) 2) (/ (+ Tgate D (* 2 Tox)) 2) 0)) 
-	"Gate") 
-
-(sdegeo:delete-region(find-body-id (position (/ (+ Lg (* 2 Lsource)) 2) (/ (+ Tgate D (* 2 Tox)) 2) 0)))
-
-
-;mesh
-
-;(sdedr:define-refinement-size "RF.ox" 10e-3 5e-3 5e-3 5e-3 5e-3 5e-3)
-;(sdedr:define-refinement-function "RP.ox" "MaxLenInt" "HfO2" "Silicon" 1e-3 1.1 "DoubleSide")
-;(sdedr:define-refinement-material "RP.ox"  "RF.ox" "HfO2")
-
-;(sdedr:define-refinement-size "RF.ch" 10e-3 5e-3 5e-3 5e-3 5e-3 5e-3)
-;(sdedr:define-refinement-function "RP.ch" "MaxLenInt" "Silicon" "HfO2" 1e-3 1.1 "DoubleSide")
-;(sdedr:define-refinement-material "RP.ch"  "RF.ch" "Silicon")
-
-
-
-(define fp 1.0)
-(define ratio_fp 1)
-(define dx  (* (/ Lg 30) fp))
-(define dyz  (* (/ D 15) fp))
-(define dox   (* (/ Tox 5) fp))  
-
-(sdedr:define-refeval-window "W.Global1"  "Rectangle"  
-	(position 0.075 0.0 0 )
-	(position 0.083 0.002 0 )
-	)
-(sdedr:define-refeval-window "W.Global2"  "Rectangle"  
-	(position 0.017 0.0 0 )
-	(position 0.025 0.002 0 )
-	)
-(sdedr:define-refinement-size "R.Global1" 0.0001 0.0001 0.0001 0.0001)
-(sdedr:define-refinement-placement "P.Global1" "R.Global1" "W.Global1")
-(sdedr:define-refinement-placement "P.Global2" "R.Global1" "W.Global2")
-
-(sdedr:define-refinement-window "W.Global" "Cuboid"
-	(position -1 -1 -1)
-	(position 1 1 1 )
-	)
-;(sdedr:define-refinement-size "R.Global" 5e-3 5e-3 5e-3 5e-3 5e-3 5e-3)
-;(sdedr:define-refinement-function "R.Global" "MaxLenInt" "R.Channel" "R.Drain" 1e-3  1.2 "UseRegionNames" "DoubleSide")
-
-;(sdedr:define-refinement-function "R.Global" "MaxLenInt" "R.Channel" "R.Source" 1e-3 1.5 "UseRegionNames" "DoubleSide")
-;(sdedr:define-refinement-function "R.Global" "MaxLenInt" "Silicon" "HfO2" 1e-3  1.5 "DoubleSide")
-(sdedr:define-refinement-size "R.Global" (* dx 0.5) (* dyz 0.5) (* dyz 1) (* dx 0.25) (* dyz 0.25) (* dyz 0.5))
-;(sdedr:define-refinement-function "R.Global" "MaxLenInt" "Silicon" "SiO2" (* dz 1) (* ratio_fp 1.5))
-(sdedr:define-refinement-function "R.Global" "MaxLenInt" "R.Channel" "R.Drain" (* dyz 0.1) (* ratio_fp 1.3) "UseRegionNames" "DoubleSide")
-(sdedr:define-refinement-function "R.Global" "MaxLenInt" "R.Channel" "R.Source" (* dyz 0.1) (* ratio_fp 1.3) "UseRegionNames" "DoubleSide")
-(sdedr:define-refinement-function "R.Global" "MaxLenInt" "Silicon" "HfO2" (* dox 0.1) (* ratio_fp 1.3) "DoubleSide")
-(sdedr:define-refinement-placement "P.Global" "R.Global" "W.Global")
-	
-
-;(define nlevels 5)
-;(define factor 1.5)
-;(sdedr:offset-block "region" "R.Channel" "maxlevel" nlevels)
-;(sdedr:offset-interface "region" "R.Channel" "R.Gox" "hlocal" 0.001 "factor" factor)
-;(sdedr:offset-interface "region" "R.Gox" "R.Channel" "hlocal" (/ Tox 5) "factor" factor)
-	
-;(sdedr:define-refinement-size "RD.Channel" (* dx 2) (* dyz 4) (* dyz 4) (* dx 1) (* dyz 2) (* dyz 2))
-;(sdedr:define-refinement-placement "PL.Channel" "RD.Channel" "R.Channel")	
-
-
-	
-;(sdedr:define-refinement-size "RD.Source" (* dx 4) (* dyz 5) (* dyz 5) (* dx 2) (* dyz 3) (* dyz 3))
-;(sdedr:define-refinement-placement "PL.Source" "RD.Source" "R.Source")
-
-
-;(sdedr:define-refinement-size "RD.Drain" (* dx 4) (* dyz 5) (* dyz 5) (* dx 2) (* dyz 3) (* dyz 3))
-;(sdedr:define-refinement-placement "PL.Drain" "RD.Drain" "R.Drain")
-
-;(sdedr:define-refinement-window "RW.Overlap" "Cuboid"
-;	(position ( * Lgate 0.75) (/ Wsi 2) 0)
-;	(position (+ Lgate (* 0.25 Ldrain)) (/ Wsi -2) Tsi)
-;	)	
-;(sdedr:define-refinement-size "RD.Overlap" (* dx 2) (* dy 4) (* dz 3) (* dx 1) (* dy 2) (* dz 2))
-;(sdedr:define-refinement-function "RD.Overlap" "MaxLenInt" "R.Channel" "R.Drain" 1e-3 1.5 "UseRegionNames" "DoubleSide")
-;(sdedr:define-refinement-placement "PL.Overlap" "RD.Overlap" "RW.Overlap")
+etch oxide thickness= 0.5 type= anisotropic
+etch oxide thickness= 0.06 type= anisotropic
+strip photoresist
+struct tdr= n@node@_TR1
 
 
 
 
+etch silicon thickness=@Trench_D@  type= trapezoidal angle= 88.9
+etch silicon thickness=@Trench_W@  type= isotropic
+
+mask  name= TR2  segments= {8 8.4 11.4 11.8 14.8 15.2 18.3 18.7 21.7 22.1 26.6 27 32 32.4}
+photo mask= TR2  thickness= 8
+
+struct tdr= n@node@_TR11
+
+etch oxide thickness= 0.5 type= anisotropic
+etch oxide thickness= 0.06 type= anisotropic
+
+struct tdr= n@node@_TR12
 
 
+etch silicon thickness= 6.2  type= trapezoidal angle= 88.9 
+etch silicon thickness= 0.9  type= isotropic
+strip photoresist
 
-(sde:build-mesh  "n@node@")
+struct tdr= n@node@_TR13
+
+etch oxide thickness= 0.5 type= anisotropic
+etch oxide thickness= 0.06 type= anisotropic
+
+struct tdr= n@node@_TR2
+strip oxide
+
+#split OXIDE
+deposit oxide thickness=@cvd@<um> isotropic
+
+##grid set.min.normal.size=1 set.normal.growth.ratio.2d=1.5
+diffuse temperature= 1150   time= 90    flowN2= 16
+struct tdr= n@node@_FOX1
+
+#split FIELDPOLY#
+
+##deposit oxide thickness= 0.53
 
 
-#-------------------------------------------------------------
+diffuse temperature= 1100   time= 30    flowN2= 16
 
-#if [string match "@Type@" "NMOS"]
+struct tdr= n@node@_FOX2
 
+deposit polysilicon thickness= 0.8 phosphorus concentration=6e20
 
-    #define _Vds_  @Vds@
-    #define _VgsStart_  -3
-    #define _VgsEnd_ 1
-
-  #else
-    #define _Vds_  -0.5
-    #define _VgsStart_  3
-    #define _VgsEnd_ -1
-   
-   #endif
- 
- 
-* 1 input outout file
+etch polysilicon type= cmp coord=-0.31
+##etch polysilicon thickness= 0.8 type= anisotropic
+struct tdr= n@node@_P1CMP
 
 
+etch polysilicon thickness= 0.33 type= anisotropic
 
+
+###############1.75 Below Si 1.45##############
+
+mask  name= P0  segments= {0 7}
+photo mask= P0  thickness= 2
+struct tdr= n@node@_P0
+
+etch polysilicon type= cmp coord=1.54
+
+struct tdr= n@node@_P0ET
+strip photoresist
+
+mask  name= P01  segments= {7 38}
+photo mask= P01 thickness= 2
+deposit polysilicon thickness= 0.8 phosphorus concentration=6e20
+
+
+etch polysilicon type= cmp coord=0
+strip photoresist
+
+etch oxide thickness=0.4 type= isotropic
+struct tdr= n@node@_Pull1
+
+#split HDP
+
+
+deposit oxide thickness= 1.6
+struct tdr= n@node@_HDPDEP
+etch oxide cmp coord=0.022512
+struct tdr= n@node@_HDPcmp
+diffuse temperature= 950   time= 60   flowN2= 16
+
+mask  name= AA  segments= {0 6.7}
+photo mask= AA  thickness= 2
+
+etch oxide thickness= @IPO@ type= anisotropic
+
+strip photoresist
+struct tdr= n@node@_HDPetch
+
+#split GPOLY
+deposit oxide thickness= @gateoxide@<um> isotropic
+temp_ramp name=WETGOX time= 35.0<min> temp= 800.0<C> t.final= 950.0<C>
+temp_ramp name=WETGOX time= 15.0<min> temp= 950.0<C> t.final= 950.0<C>
+temp_ramp name=WETGOX time= 50.0<min> temp= 950.0<C> t.final= 800.0<C>
+diffuse temp_ramp= WETGOX
+
+##deposit polysilicon thickness= 0.8 phosphorus concentration= 1e20
+deposit polysilicon thickness= 1.2 phosphorus concentration= 1e20
+struct tdr= n@node@_GYdep
+
+etch polysilicon type= cmp coord= 0.06
+struct tdr= n@node@_GPYCMP
+etch polysilicon thickness= @p1_et1@ type= anisotropic
+
+##refinebox min= {0 0} max= {1.65 50} xrefine= { 0.1 } \
+##yrefine= {0.1} silicon
+##grid remesh
+
+##refinebox min= {2 0} max= {4.5 50} xrefine= { 0.1 } \
+##yrefine= {0.1} silicon
+##grid remesh
+diffuse temperature= 950   time= 30   flowN2= 16
+
+#split BODY
+
+
+etch oxide thickness=@bodyoxdip@ type=anisotropic
+
+struct tdr= n@node@_PWSCOX
+implant boron dose=@body1_dose@ energy=@body1_energy@ tilt=0
+###implant boron dose=2.5e12 energy=90 tilt=0
+
+##implant boron dose=3.4e12 energy=140 tilt=0
+##implant boron dose=3.4e12 energy=300 tilt=0
+##implant boron dose=3.4e12 energy=30 tilt=0
+
+diffuse temperature=@body_temp@ time=@body_time@    flowN2=16
+
+#split NPLUS
+
+etch oxide thickness=@noxdip@ type=anisotropic
+struct tdr= n@node@_NPSCOX
+
+mask  name= SN  segments= {0 7.5}
+photo mask= SN  thickness= 2
+
+implant arsenic  dose= @np_dose@ energy= @np_energy@
+
+strip photoresist
+
+diffuse temperature= @np_temp@  time= @np_time@  flowN2= 20
+
+#split CONTACT
+
+mask name=CT segments= {0 0.175 3.075 3.425 6.385 6.735 8.025 8.375 9.725 10.075 13.135 13.485 11.425 11.775 14.825 15.175}
+photo mask=CT thickness=2
+etch oxide thickness=0.5 type=anisotropic
+etch oxide thickness=0.5 type=anisotropic
+
+strip photoresist
+etch silicon thickness=@CT_D@ type= trapezoidal angle= 86.5
+
+mask name=CT1 segments= {8.025 8.375 11.425 11.775 14.825 15.175}
+photo mask=CT1 thickness=2
+etch polysilicon thickness=@CT_D@ type= trapezoidal angle= 86.5
+strip photoresist
+
+implant BF2   dose=@ct_dose@ energy=@ct_energy@
+##implant boron dose=2e13 energy=50 
+
+diffuse temperature= 1000   time= 15<s>    flowN2=16
+
+diffuse temperature=730  time=0.5    flowN2=16
+
+#split METAL
+
+deposit Aluminum thickness=4 type=isotropic
+refinebox  min= {0  0.0 }  max= { 9  38 }  \
+          xrefine= {0.2} yrefine= {1.0}   Silicon add
+grid remesh
+contact name=source y=0.7 x=-2 replace Aluminum
+contact name=source y=1.5 x=2 replace polysilicon
+contact name=source y=5 x=2 replace polysilicon add
+contact name=source y=8 x=2 replace polysilicon add
+contact name=source y=11.5 x=2 replace polysilicon add
+contact name=source y=15 x=2 replace polysilicon add
+contact name=gate y=1.5 x=0.5 replace polysilicon
+contact name=gate y=4.5 x=0.5 replace polysilicon add
+contact name=drain bottom
+
+struct tdr=n@node@_SGT200V_1
+struct tdr=n@node@_SGT200V_full
+
+
+#----------------------------------------------------------------------------------------
 File {
-	*input files
-	Grid = "@tdr@"
-	Parameter = "@parameter@"
+  Grid      = "n@node|sprocess@_SGT200V_full_fps.tdr"	  
+  Parameter = "@parameter@"
+  Plot      = "@tdrdat@"
+  Current   = "@plot@"
+  Output    = "@log@"
 	
-	* output files
-	Output ="@log@"
-	Plot = "@tdrdat@"
-    Current = "@plot@"
-  *  NewtonPlot= "n@node@_Newton_%d_des.tdr"
 }
 
-* 2 Boundary Condition
-
-Electrode{
-	{ Name= "Source"  Voltage =0.0}
-	{Name= "Gate"  Voltage =0.0}
-	*{Name= "Substrate"  Voltage =0.0}
-	{Name= "Drain"  Voltage =0.0}
-}
-
-* 3 Physics
- 
-Physics{ *global model
+Electrode {
+	{ name="drain" voltage=0.0 Resistance= 1.0e14  }
+	{ Name="source" Voltage= 0.0 }
+	#{ Name="gate" Voltage=0.0 Workfunction= @WK@}
+	{ Name="gate" Voltage=0.0 }
+	##{ Name="source1" Voltage=0.0 }
 	
-	Fermi
 }
 
-*material-wise
-Physics(Material = "Silicon"){
-  eQuantumPotential(AutoOrientation density)	
-  Mobility(
-    HighFieldSaturation
-    Enormal (
-	 IALMob(AutoOrientation)
-	 RPS                                    # Used for remote phonon scattering (RPS)
-	 NegInterfaceCharge (SurfaceName="s1")  # Used for remote Coulomb scattering (RCS) and remote dipole scattering (RDS)
-	 PosInterfaceCharge (SurfaceName="s1")  # Used for RCS and RDS
-            )
-          )
-  EffectiveIntrinsicDensity(OldSlotboom)
-  Recombination( SRH( DopingDep )
-  	  		     Auger
-  	  		     Band2Band(Model=NonLocalPath)
-  )
-#  eMultivalley(MLDA kpDOS -density)
-#  hMultivalley(MLDA kpDOS -density)
-}
-* 4 math
-
-Math {
-	  ExtendedPrecision      
-   	  Extrapolate
-	  RelErrControl
-	  Digits= 6
-	  Notdamped= 50
-	  Iterations= 20
-	  RHSmin= 1e-8
-#	  Method= Pardiso	  
-	  DirectCurrent
-	  ExitOnFailure
-	  TensorGridAniso
-      StressMobilityDependence = TensorFactor
-	  Number_of_Threads= 8 
-	  RefDens_eGradQuasiFermi_Zero= 1e12
-	  RefDens_hGradQuasiFermi_Zero= 1e12
-
-	    NonLocalPath (
-  	  Postprocessing
-  	  Derivative= 0                     # compute derivatives
-  	  Strategy=1						# use strategy 1
-  	  N=5 								# collect edges from last 5 iterations
-  	  MinStep=1.0e-5					# define lower boundary
-  	  MaxStep=1.0e-2					# define upper boundary
-  )  
-  
-  Surface "s1" (
-  MaterialInterface= "Silicon/HfO2" 
-  )
+Physics {
+	####AreaFactor  = 2430000
+	Temperature = 300
+	Mobility(
+		PhuMob Enormal
+		HighFieldSaturation(EparallelToInterface)	
+	)
+	Recombination(
+		SRH( DopingDep TempDependence)	
+		Auger
+    Avalanche(Okuto)
+    )
+EffectiveIntrinsicDensity( OldSlotboom )
+## Thermodyanmic Simulations
+## -- Thermodynamic AnalyticTEP
 }
 
-* 5 Output
-	
-Plot {
+Plot{
   eDensity hDensity
   TotalCurrent/Vector eCurrent/Vector hCurrent/Vector
   eMobility hMobility
   eVelocity hVelocity
   eQuasiFermi hQuasiFermi
-  eTemperature Temperature * hTemperature
+  Temperature
+  eTemperature  hTemperature
   ElectricField/Vector Potential SpaceCharge
   Doping DonorConcentration AcceptorConcentration
-  SRH Band2Band * Auger
+  SRH Auger Band2Band 
   AvalancheGeneration eAvalancheGeneration hAvalancheGeneration
   eGradQuasiFermi/Vector hGradQuasiFermi/Vector
   eEparallel hEparallel eENormal hENormal
-  BandGap 
   BandGapNarrowing
-  Affinity
-  ConductionBand ValenceBand
-  eQuantumPotential
-  eBarrierTunneling hBarrierTunneling * BarrierTunneling
-  eTrappedCharge  hTrappedCharge
 }
 
-* 6 Solve
+Math {
+	ExtendedPrecision
+	Extrapolate
+	Notdamped= 50
+	Iterations= 20
+	ExitOnFailure
+	Digits= 5 
+	RHSmin= 1e-20
+	# RefDens_eGradQuasiFermi_EParallelToInterface= 1.0e12
+	# RefDens_hGradQuasiFermi_EParallelToInterface= 1.0e12
+	Number_of_threads= 8
+
+}
+
 Solve {
-	
+
+	## Initial Solution
 	Coupled { Poisson }
-    Coupled ( Iterations= 100 LineSearchDamping= 1e-8 ){ Poisson eQuantumPotential } 
-    Coupled { Poisson Electron Hole eQuantumPotential }
-    * get  a solution 
-
-  Quasistationary( 
-    InitialStep= 1e-2 Increment= 1.35 
-    MinStep= 1e-6 MaxStep= 0.1 
-    Goal { Name="Drain" Voltage= _Vds_ } 
-    Goal { Name="Gate" Voltage= -3.0 } 
-  ){ Coupled { Poisson Electron Hole eQuantumPotential } }    
-    
-  NewCurrentPrefix= "IdVg_"         
-  Quasistationary( 
-    InitialStep= 1e-2 Increment= 1.3 
-    MinStep= 1e-6 MaxStep= 0.1 
-    Goal { Name="Gate" Voltage= 1.0 } 
-  ){ Coupled { Poisson Electron Hole eQuantumPotential }
-    CurrentPlot( Time=(Range=(0 1) Intervals= 100) ) 
-  }
-}
-
-#---------------------------------------------------------------------
-
-#setdep @previous@
-
-#----------------------------------------------------------------------#
-load_library extract
-lib::SetInfoDef 1
-#----------------------------------------------------------------------#
-set N     @node@
-set i     @node:index@
-
-#- Automatic alternating color assignment tied to node index
-#----------------------------------------------------------------------#
-set COLORS  [list green blue red orange magenta violet brown]
-set NCOLORS [llength $COLORS]
-set color   [lindex  $COLORS [expr $i%$NCOLORS]]
-
-#- Plotting IdVg
-#----------------------------------------------------------------------#
-echo "#########################################"
-echo "Plotting Id-Vg (lin) curve"
-echo "#########################################"
-load_file IdVg_@plot@ -name PLT_IdVg($N)
-
-if {[lsearch [list_plots] Plot_IdVg] == -1} {
-	create_plot -1d -name Plot_IdVg
-}
-select_plots Plot_IdVg
-
-set Vgs [get_variable_data "Gate InnerVoltage" -dataset PLT_IdVg($N)]
-set Ids [get_variable_data "Drain TotalCurrent" -dataset PLT_IdVg($N)]
-set B2BId [get_variable_data "eBand2BandGenerationCurrent" -dataset PLT_IdVg($N)]
-set Idtotal [list]
-foreach i $Ids j $B2BId {
-		lappend Idtotal [expr abs($i) + $j]
-}
-create_variable -name absIds -dataset PLT_IdVg($N) -values $Idtotal
-ext::AbsList -out absIds -x $Idtotal ;# Compute absolute value of drain currents
-
-create_curve -name IdVgLin($N) -dataset PLT_IdVg($N) \
-	-axisX "Gate OuterVoltage" -axisY "absIds"
+	Coupled(Iterations=100 LineSearchDamping=1e-4){ Poisson Electron }
+	Coupled {Poisson Electron Hole}   
 	
-set_curve_prop IdVgLin($N) -label "IdVg Vd=@Vds@ " \
-	-color $color -line_style solid -line_width 3
-	 
-set_plot_prop -title "I<sub>d</sub>-V<sub>gs</sub> Curves" -title_font_size 25 -show_legend
-set_axis_prop -axis x -title {Gate Voltage [V]} \
-	-title_font_size 20 -label_font_size 15 -type linear 
-set_axis_prop -axis y -title {Drain Current [A/<greek>m</greek>m]} \
-	-title_font_size 20 -label_font_size 15 -type log
-set_legend_prop -label_font_size 15 -location bottom_right -label_font_att bold
+	NewCurrentPrefix="BV_"
+	
+	## Ramp drain voltage until the device drain current exceeds 250 uA 
+	Quasistationary(
+	InitialStep= 1e-3 MinStep= 1e-7 MaxStep= 1
+	Increment= 1.5 Decrement= 2
+	Goal { Name="drain" Voltage= 1e4 }
+	BreakCriteria {Current (Contact="drain" Absval= 1e-12 ) }     
+	){ Coupled { Poisson Electron Hole } }   
+
+}
+
+#define ParFileDir .
+
+Material="Silicon" {
+  #includeext "ParFileDir/Silicon.par"
+  
+	OkutoCrowell * Impact Ionization:
+	{ * G_impact = alpha_n n v_drift_n  +  alpha_p p v_drift_p
+	  * with alpha = a (1+c(T-300)) E^gamma exp[-(b (1+d(T-300)) /E )^delta]
+		a	= @<0.5*0.426>@ ,	@<0.5*0.243>@	# [1/cm]
+	}  
+  
+}
+
+
+
+
+
+
+
 
