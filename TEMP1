@@ -1,399 +1,369 @@
 # Copyright (C) 1994-2023 Synopsys Inc.
-# swbtree vW-2024.09-SP1, saved by gtclsh
+# swbtree vW-2024.09-SP1, saved by gsub0
 
 # --- simulation flow
-sprocess sprocess "" {}
-sprocess PITCH "2.8" {2.5} V
-sprocess EPITHK "3.5" {8.0} V
-sprocess CEPI "0.16" {1e15} R
-sprocess EPI "1" {1} V+
-sprocess TRDEP "5.5" {5.5} V
-sprocess TRCD "1.0" {1.2} R
-sprocess TR "1" {1} R+
-sprocess FOXTHK "0.45" {0.35} R+
-sprocess S_poly "1" {2} R+
-sprocess HDP "1" {1} R+
-sprocess GOX "0.06" {0.05} R+
-sprocess G_poly "1" {1} R+
-sprocess PBI "9E12" {1E13} R+
-sprocess BM "2.85" {3.65} V+
-sprocess PBI1 "1.2E13" {1.2E13} R
-sprocess NSDIMP "4E15" {4E15} R+
-sprocess BPSG "1" {1} R+
-sprocess CTCD "0.2" {0.2} R+
-sprocess CTIMP "2E14" {2E14} R+
-sprocess DEVICE "DMOS" {DMOS} R+
-sprocess RMESH "1" {1} R+
-sdevice sdevice "" {}
-sdevice oku "1.0" {1.0} R
+NMOS sprocess "" {}
+NMOS Lch "0.5" {0.5} V
+NMOS PB "0" {0} V
+NMOS JFET "0" {0} V
+NMOS YJFET "1.25" {1.25} V
+NMOS Ypolyl "0" {0} V
+NMOS pWD "3e13" {3e13} V
+NMOS nJD "3e11" {3e11} V
+NMOS nPD "5e15" {5e15} V
+NMOS pPD "2e15" {2e15} V
+NMOS Process_Mesh "1.0" {1.0} V
+NMOS Sub_Doping "1e19" {1e19} V
+NMOS Ndrift_Thickness "10.0" {10.0} V
+NMOS Ndrift_Doping "2e15" {2e15} R
+NMOS GATE "1" {1} V+
+NMOS CONTL "0" {0} V
+NMOS tOXetch "0.5" {0.5} R
+NMOS Device_Mesh "1.0" {1.0} V+
+NMOS Type "Planer" {Planer} R
+IdVg sdevice "" {}
+IdVg FC "6e11" {6e11} V
+IdVg Tamb "300" {300} V
+IdVg AF "1.0e5" {6.67e7} V
+IdVg Vd "10.0" {10.0} R
+Plot_IdVg svisual "" {}
+IdVd sdevice "" {}
+IdVd Vgs "20.0" {15} V
+IdVd Id "200" {200} R
+Plot_IdVd svisual "" {}
+BV sdevice "" {}
+BV Scale "1e-3" {1.0e4} R
+Plot_BV svisual "" {}
+Qg sdevice "" {}
+Qg Id1 "10" {10} R
+Plot_Qg svisual "" {}
 # --- variables
 # --- scenarios and parameter specs
-scenario default PITCH ""
-scenario default EPITHK ""
-scenario default CEPI ""
-scenario default EPI ""
-scenario default TRDEP ""
-scenario default TRCD ""
-scenario default TR ""
-scenario default FOXTHK ""
-scenario default S_poly ""
-scenario default HDP ""
-scenario default GOX ""
-scenario default G_poly ""
-scenario default PBI ""
-scenario default BM ""
-scenario default PBI1 ""
-scenario default NSDIMP ""
-scenario default BPSG ""
-scenario default CTCD ""
-scenario default CTIMP ""
-scenario default DEVICE ""
-scenario default RMESH ""
-scenario default oku ""
+scenario default Lch ""
+scenario default PB ""
+scenario default JFET ""
+scenario default YJFET ""
+scenario default Ypolyl ""
+scenario default pWD ""
+scenario default nJD ""
+scenario default nPD ""
+scenario default pPD ""
+scenario default Process_Mesh ""
+scenario default Sub_Doping ""
+scenario default Ndrift_Thickness ""
+scenario default Ndrift_Doping ""
+scenario default GATE ""
+scenario default CONTL ""
+scenario default tOXetch ""
+scenario default Device_Mesh ""
+scenario default Type ""
+scenario default FC ""
+scenario default Tamb ""
+scenario default AF ""
+scenario default Vd ""
+scenario default Vgs ""
+scenario default Id ""
+scenario default Scale ""
+scenario default Id1 ""
+scenario sensDOE_1 Lch ""
+scenario sensDOE_1 PB ""
+scenario sensDOE_1 JFET ""
+scenario sensDOE_1 YJFET ""
+scenario sensDOE_1 Ypolyl ""
+scenario sensDOE_1 pWD ""
+scenario sensDOE_1 nJD ""
+scenario sensDOE_1 nPD ""
+scenario sensDOE_1 pPD ""
+scenario sensDOE_1 Process_Mesh ""
+scenario sensDOE_1 Sub_Doping ""
+scenario sensDOE_1 Ndrift_Thickness ""
+scenario sensDOE_1 Ndrift_Doping ""
+scenario sensDOE_1 GATE ""
+scenario sensDOE_1 CONTL ""
+scenario sensDOE_1 tOXetch ""
+scenario sensDOE_1 Device_Mesh ""
+scenario sensDOE_1 Type ""
+scenario sensDOE_1 FC ""
+scenario sensDOE_1 Tamb ""
+scenario sensDOE_1 AF ""
+scenario sensDOE_1 Vd ""
+scenario sensDOE_1 Vgs ""
+scenario sensDOE_1 Id ""
+scenario sensDOE_1 Scale ""
+scenario sensDOE_1 Id1 ""
 # --- simulation tree
-0 1 0 {} {default} 0
-1 2 1 {2.5} {default} 0
-2 3 2 {8.0} {default} 0
-3 25 3 {1e15} {default} 0
-4 26 25 {1} {default} 0
-5 27 26 {5.5} {default} 0
-6 28 27 {1.2} {default} 0
-7 29 28 {1} {default} 0
-8 30 29 {0.35} {default} 0
-9 31 30 {2} {default} 0
-10 32 31 {1} {default} 0
-11 33 32 {0.05} {default} 0
-12 34 33 {1} {default} 0
-13 35 34 {1E13} {default} 0
-14 36 35 {3.65} {default} 0
-15 37 36 {1.2E13} {default} 0
-16 38 37 {4E15} {default} 0
-17 39 38 {1} {default} 0
-18 40 39 {0.2} {default} 0
-19 41 40 {2E14} {default} 0
-20 42 41 {DMOS} {default} 0
-21 43 42 {1} {default} 0
-22 44 43 {} {default} 0
-23 45 44 {1.0} {default} 0
+0 143 0 {} {default sensDOE_1} 0
+1 144 143 {0.5} {default sensDOE_1} 0
+2 145 144 {0} {default sensDOE_1} 0
+3 146 145 {0} {default sensDOE_1} 0
+4 147 146 {1.25} {default sensDOE_1} 0
+5 148 147 {0} {default sensDOE_1} 0
+6 149 148 {3e13} {default sensDOE_1} 0
+7 150 149 {3e11} {default sensDOE_1} 0
+8 151 150 {5e15} {default sensDOE_1} 0
+9 152 151 {2e15} {default sensDOE_1} 0
+10 153 152 {1.0} {default sensDOE_1} 0
+11 154 153 {1e19} {default sensDOE_1} 0
+12 155 154 {10.0} {default sensDOE_1} 0
+13 156 155 {2e15} {default sensDOE_1} 0
+14 157 156 {1} {default sensDOE_1} 0
+15 158 157 {0} {default sensDOE_1} 0
+16 159 158 {0.5} {default sensDOE_1} 0
+17 160 159 {1.0} {default sensDOE_1} 0
+18 1 160 {Planer} {default sensDOE_1} 0
+19 161 1 {} {default sensDOE_1} 0
+20 162 161 {6e11} {default sensDOE_1} 0
+21 77 162 {300} {default sensDOE_1} 0
+22 82 77 {6.67e7} {default sensDOE_1} 0
+23 87 82 {10.0} {default sensDOE_1} 0
+24 92 87 {} {default sensDOE_1} 0
+25 97 92 {} {default sensDOE_1} 0
+26 102 97 {15} {default sensDOE_1} 0
+27 107 102 {200} {default sensDOE_1} 0
+28 112 107 {} {default sensDOE_1} 0
+29 117 112 {} {default sensDOE_1} 0
+30 122 117 {1.0e4} {default sensDOE_1} 0
+31 127 122 {} {default sensDOE_1} 0
+32 132 127 {} {default sensDOE_1} 0
+33 137 132 {10} {default sensDOE_1} 0
+34 142 137 {} {default sensDOE_1} 0
 
 
-----------------------------------------------------------
+-------------------------------------------------------------------
 
+## Two Dimensional Process Simulation of 4H-SiC SiliconCarbide Power MOSFET
+## --------------------------------------------------------------------
+## Global mesh settings and mesh in newly generated layers
+## --------------------------------------------------------------------
+grid set.min.normal.size= 0.002 \
+     set.normal.growth.ratio.2d= 1.8
 
-### Lonten N150V Cell
+## SiliconCarbide interface refinement
+refinebox interface.materials= { SiliconCarbide } 
 
-math coord.ucs
-AdvancedCalibration
-
-pdbSet ImplantData LeftBoundary  Reflect
-pdbSet ImplantData RightBoundary Reflect
-
-pdbSet ImplantData DoseControl BeamDose
-pdbSet Oxide_Silicon Boundary BoundaryCondition ThreePhaseSegregation
-
+##--adaptive mesh box
+##refinebox name= Global adaptive SiliconCarbide \
+##	refine.min.edge= "@<1 * 0.025>@ @<1 * 0.025>@ " \
+##	refine.max.edge= "@<1 * 0.75>@ @< 1 * 0.15>@ " \
+##	abs.error=       "Aluminum=1e15 Nitrogen=5e16" \
+##	rel.error=       "Aluminum=0.3 Nitrogen=0.3 " \
+##	max.dose.error=  "Aluminum=1e10 Nitrogen=1e10 "     
+                                                               
 fset Fastmode 0
 if { $Fastmode == 1} {
     pdbSet ImplantData NoImplant 1
     pdbSet Diffuse NoDiffusionReaction 1
 }
 
+## Log output level
+pdbSet InfoDefault 0
+
+## Multi-threading
 math numThreads= 8
 
+## Using Universal Coordinate System (x down | y right)
+math coord.ucs
 
-##-------------------------------------
-line y location=0 spacing=0.1 tag=left
-line y location=@PITCH@*10 spacing=0.5 tag=right
-line x location=0 spacing=0.5 tag=top
-line x location=9 spacing=1 
-line x location=10 spacing=1 tag=bottom
+## Calibrated set-up for Implantation of Dopants in 4H-SiC
+AdvancedCalibration 4H-SiC
+pdbSet ImplantData MonteCarlo 1
+pdbSet MCImplant Particles 5000
+pdbSet MCImplant RightBoundary TrueReflect
+pdbSet MCImplant Intervals dy 0.01
 
-region silicon xlo= top xhi= bottom ylo= left yhi= right
-init resistivity= 0.1 field= Arsenic wafer.orient= 100 flat.orient= {1 1 0}
+## Orientation Depenedent Oxidation in SiC
+pdbSet Oxide_SiliconCarbide O2 OriDep 1
+pdbSet Grid TS4Mesh LocalGridSpace 0
+pdbSet Oxide_SiliconCarbide O2 Stress.Dependent.Growth 1
 
-############EPI DEP###################
-#split EPI
+## Geometric Parameter Definitions..
 
-grid set.min.normal.size= 0.01 \
-     set.normal.growth.ratio.2d= 2.0 \
-     set.max.points= 1000000 set.max.neighbor.ratio= 1e6
+fset tsub 10.0
+fset p_top 0.0
+fset p_epibot [expr $p_top + @Ndrift_Thickness@]
+fset p_bot [expr $p_epibot + $tsub]
+fset Xmax [expr @Ndrift_Thickness@ + $tsub]
 
-refinebox name=Global Silicon       \
-    min= "0 0" max= "10 50"  \
-    xrefine= "0.01 1.0 "                   \
-    yrefine= "0.5 0.5"
+fset Lch @Lch@
+#fset Yext 0.0
+fset pw_ledge @YJFET@
+fset np_ledge [expr $pw_ledge + $Lch] 
+fset np_redge [expr $np_ledge + 1.5]
+fset pp_redge [expr $np_redge + 0.5]
+fset Ymax [expr $pp_redge ]
+
+## -------------------------------------------------------------
+## Mask definitions
+## -------------------------------------------------------------
+mask name= PWELL left= $pw_ledge right= $Ymax
+mask name= JFET  left= $pw_ledge right= $Ymax negative
+mask name= NPLUS left= $np_ledge right= $np_redge
+mask name= PPLUS left= $np_redge right= $pp_redge
+mask name= CONT  left= [expr $np_redge - 0.25] right= [expr $pp_redge ] negative
+
+## Line commands
+line x location= $p_epibot tag= top
+line x location= $p_bot tag= bottom
+
+line y location= 0.0 tag= left
+line y location= $pw_ledge tag= pw_ledge
+line y location= $np_ledge tag= np_ledge
+line y location= $np_redge tag= np_redge
+##line y location= $pp_redge tag= pp_redge
+line y location= $Ymax tag= right
+
+## Simulation Initialization
+region SiliconCarbide xlo= top xhi= bottom ylo= left yhi= right substrate
+
+init field= Nitrogen concentration= @Sub_Doping@ wafer.orient= {0 0 1} \
+	notch.direction= {1 1 0} miscut.tilt= 4 \
+	miscut.toward= {1 1 0} slice.angle= -90
+
+### Epi: Nitrogen drift layer
+refinebox name=Epi min= 0.0 max= $p_epibot xrefine= "0.01 0.1 0.01"
+grid remesh
+
+fset epi_thickness @Ndrift_Thickness@
+set epi_time 360
+set th1 $epi_thickness*0.1
+set th2 $epi_thickness*0.1
+set th3 $epi_thickness*0.8
+set time1 $epi_time*0.1
+set time2 $epi_time*0.1
+set time3 $epi_time*0.8
+deposit SiliconCarbide anisotropic thickness= $th1 species= Nitrogen concentration= @Ndrift_Doping@
+diffuse temperature=1600 time=$time1
+deposit SiliconCarbide anisotropic thickness= $th2 species= Nitrogen concentration= @Ndrift_Doping@
+diffuse temperature=1600 time=$time2                      
+deposit SiliconCarbide anisotropic thickness= $th3 species= Nitrogen concentration= @Ndrift_Doping@
+diffuse temperature=1600 time=$time3
+
+## P-Well implantation
+photo mask= PWELL thickness= 2.0
+refinebox name= PWELL1 mask= PWELL extrusion.min= 0.0 extrusion.max= 1.5 extend= 0.5 xrefine= 0.1
+refinebox name= PWELL2 mask= PWELL min= 0.0 max= 1.0 mask.edge.mns= 0.02 mask.edge.ngr= 1.1 mask.edge.refine.extent= 0.5
+grid remesh
+
+implant Aluminum dose= @<pWD * 0.1>@ energy= 200
+implant Aluminum dose= @<pWD * 0.2>@ energy= 300
+implant Aluminum dose= @<pWD * 0.4>@ energy= 400
+implant Aluminum dose= @<pWD * 0.3>@ energy= 500
+
+## Remove PhotoResist
+strip photo
+
+## N+ Source implantation
+photo mask= NPLUS thickness= 10.0
+refinebox name=NPLUS1 mask= NPLUS extrusion.min= 0.0 extrusion.max= 0.4 extend= 0.1 xrefine= 0.02
+refinebox name=NPLUS2 mask= NPLUS min= 0.0 max= 0.3 mask.edge.mns= 0.01 mask.edge.ngr= 1.2 mask.edge.refine.extent= 0.8
+grid remesh
+
+## Nplus 
+implant Nitrogen dose= @<nPD * 0.1>@ energy= 60 tilt= 0
+implant Nitrogen dose= @<nPD * 0.2>@ energy= 80 tilt= 0
+implant Nitrogen dose= @<nPD * 0.4>@ energy= 100 tilt= 0
+implant Nitrogen dose= @<nPD * 0.3>@ energy= 120 tilt= 0
+
+## Remove PhotoResist
+strip photo
+
+#if @JFET@ == 1
+photo mask= JFET thickness= 2.0
+refinebox name= JFET1 mask= JFET extrusion.min= 0.0 extrusion.max= 1.5 extend= 0.5 xrefine= 0.1
+refinebox name= JFET2 mask= JFET min= 0.0 max= 1.0 mask.edge.mns= 0.02 mask.edge.ngr= 1.1 mask.edge.refine.extent= 0.5
+grid remesh
+
+implant Nitrogen dose= @<nJD>@ energy= 100
+implant Nitrogen dose= @<nJD>@ energy= 200
+implant Nitrogen dose= @<nJD>@ energy= 300
+
+#endif
+
+#if @PB@ == 1
+## P+ Source implantation
+mask name= PPLUSA segments= { 0.0 0.4 $np_redge $pp_redge }
+photo mask= PPLUSA thickness= 10.0
+refinebox name= PPLUS1 mask= PPLUSA extrusion.min= 0.0 extrusion.max= 0.5 extend= 0.1 xrefine= 0.02
+refinebox name= PPLUS2 mask= PPLUSA min= 0.0 max= 0.5 mask.edge.mns= 0.01 mask.edge.ngr= 1.2 mask.edge.refine.extent= 0.8
+grid remesh
+#else
+photo mask= PPLUS thickness= 10.0
+refinebox name= PPLUS1 mask= PPLUS extrusion.min= 0.0 extrusion.max= 0.5 extend= 0.1 xrefine= 0.02
+refinebox name= PPLUS2 mask= PPLUS min= 0.0 max= 0.5 mask.edge.mns= 0.01 mask.edge.ngr= 1.2 mask.edge.refine.extent= 0.8
+grid remesh
+#endif
+
+
+
+## Pplus 
+implant Aluminum dose= @<pPD * 0.7>@ energy= 30 tilt= 0
+implant Aluminum dose= @<pPD * 0.3>@ energy= 60 tilt= 0 
+
+## Remove PhotoResist
+strip photo
+
+## High Temperature Annealing
+diffuse time= 5<min> temperature= 1800<C>
+
+## Gate oxidation -- wet oxidation
+diffuse time= 300.0 temp= 1215 H2O
+
+#split GATE
+
+## Poly gate formation
+#if @Ypolyl@ == 1
+mask name= POLY  left= $pw_ledge-0.4  right= $np_ledge negative
+#else
+mask name= POLY  left= 0.0  right= $np_ledge negative
+#endif
+deposit PolySilicon anisotropic mask= POLY thickness= 0.2
+
+## ILD deposition
+deposit Oxide thickness= 0.5 isotropic
+
+## Etch source contact
+mask name= CONTA left= 0.0 right= 0.4 negative
+etch Oxide thickness= 0.8 anisotropic mask= CONT
+
+#if @CONTL@ == 1
+etch Oxide thickness= @tOXetch@ anisotropic mask= CONTA
+#endif
+
+## Aluminum deposition for the source contact
+deposit Aluminum thickness= 1.0 isotropic
+
+#split Device_Mesh
+
+## Contacts placement for electrical simulation
+contact name= gate point x= -0.2 y= 1.6 PolySilicon
+contact name= source point x= -1.0 y= $np_redge Aluminum
+contact name= drain bottom
+
+
+## Re-meshing for device simulations
+refinebox clear
+line clear
+
+pdbSet Grid AdaptiveField Refine.Abs.Error 1.0e37
+pdbSet Grid AdaptiveField Refine.Rel.Error 1e10
+pdbSet Grid SnMesh DelaunayType boxmethod
+
+refinebox name= Global \
+ refine.max.edge= "1.0 0.5" refine.min.edge= "@< 0.03 * Device_Mesh >@ @< 0.03 * Device_Mesh >@" \
+ refine.fields= { NetActive } def.max.asinhdiff= 1 \
+ adaptive SiliconCarbide
+ 
+refinebox name= Ref_active \
+ refine.max.edge= "0.3 0.3" refine.min.edge= "@< 0.01 * Device_Mesh >@ @< 0.01 * Device_Mesh >@" \
+ refine.fields= { NetActive } def.max.asinhdiff= 1 \
+ adaptive SiliconCarbide min= "0.0 0.0" max= "3.0 5.0"
+ 
+## Oxide interface refinement 
+refinebox name= Ref_channel min.normal.size= @< 0.002 * Device_Mesh >@ normal.growth.ratio= 2.5 \
+ interface.materials= { SiliconCarbide } min= "0 $pw_ledge" max= "0.2 $np_ledge"
 
 grid remesh
 
-etch Silicon type=anisotropic thickness= @EPITHK@
-deposit Silicon type= anisotropic thickness= @EPITHK@  fields.values= {Phosphorus= @CEPI@} temperature= 600
-diffuse  temp=1100 time= 1e-6<s>
+## Save TDR for device simulation
+struct tdr= n@node@ !Gas
 
-#split TR
-mask name=TR segments= {@PITCH@*0.5-@TRCD@*0.5+0.1  @PITCH@*0.5+@TRCD@*0.5-0.1    @PITCH@*0.5-@TRCD@*0.5+2.9  @PITCH@*0.5+@TRCD@*0.5+2.7   \
-                        @PITCH@*0.5-@TRCD@*0.5+5.7  @PITCH@*0.5+@TRCD@*0.5+5.5    @PITCH@*0.5-@TRCD@*0.5+8.5  @PITCH@*0.5+@TRCD@*0.5+8.3   \
-                        @PITCH@*0.5-@TRCD@*0.5+11.3  @PITCH@*0.5+@TRCD@*0.5+11.1    @PITCH@*0.5-@TRCD@*0.5+14.1  @PITCH@*0.5+@TRCD@*0.5+13.9 }
-
-photo mask=TR  thickness=2<um>
-
-etch silicon trapezoidal thickness=@TRDEP@ angle=89
-etch silicon thickness=0.2 type=isotropic 
-strip photoresist
-
-etch oxide thickness=3 type=anisotropic   
-
-#split FOXTHK
-############FOX 4500A###################
-
-refinebox name= ALL materials= {Silicon} min= {0.0 0.0} max= {10 25}  xrefine= {0.1 0.5}  yrefine= {0.5 0.5}
-                                                                                                      
-refinebox name= Ref_IF Silicon \
-    min="-1 0" max="10.0 30" \
-    min.normal.size= 0.05 normal.growth.ratio= 1.5 \
-    interface.materials= { Silicon Oxide }  
-
-refinebox name= top_refine materials= {Silicon} min= {0.0 0.0} max= {1.3 25.0}  xrefine= {0.03 0.06 0.03}  yrefine= {0.25 0.25}
-
-grid remesh                                                     
-
-etch Nitride thickness=0.65 type=isotropic
-deposit oxide thickness=@FOXTHK@ 
-
-#split S_poly
-############################################# SOURCE POLY ###############
-mask name= m_S_poly  segments= {0 @PITCH@*0.5-@TRCD@*0.5+8  }
-deposit polysilicon thickness=2.8  arsenic concentration=1e20 temperature=540
-etch polysilicon thickness=3.2
-
-photo mask=m_S_poly  thickness=3<um>
-etch polysilicon thickness= 1.35
-strip photoresist
-
-#split HDP
-############################################# HDP ###############
-mask name= m_HDP  segments= {0 @PITCH@*0.5-@TRCD@*0.5+4.50  }
-deposit oxide thickness=2.8
-
-etch oxide thickness=3.0 isotropic
-etch oxide cmp coord=0
-etch oxide thickness=0.03 type=isotropic
-
-photo mask=m_HDP  thickness=3<um>
-etch oxide thickness=1.3
-strip photoresist
-
-#split GOX
-deposit oxide thickness=@GOX@ isotropic
-
-#split G_poly
-################################### GATE POLY ##############################
-
-deposit polysilicon thickness=2.4  arsenic concentration=1e20  temperature=540
-etch    polysilicon    thickness=2.42
-
-#split PBI
-######################################## PBODY #################################
-
-implant boron dose=@PBI@ energy=200 tilt=7 rotation=90 
-diffuse  temp= 1100 time= 30<s> flowN2=20 
-
-#split BM
-######################################## body#################################
-mask name=BM left=1.95  right=@BM@ 
-photo mask=BM  thickness=0.6<um> 
-implant boron dose=@PBI1@ energy=100 tilt=7 rotation=90 
-diffuse  temp=1100 time= 30<s> flowN2=20 
-strip photoresist
-
-#split NSDIMP
-mask name=SN  segments= {0  4} 
-photo mask=SN  thickness=3.5<um> 
-implant    Arsenic dose=@NSDIMP@ energy=130  tilt=7 rotation=90 
-strip photoresist
-
-diffuse 	time=0.05 temp=950 flowN2=16
-
-#split BPSG
-####################################BPSG8000-8000A
-deposit oxide thickness=0.22
-deposit oxide thickness=0.6
-
-#split CTCD
-####################################################################################pplus
-
-mask name= CT   segments= {0 0.14    2.5 2.8     5.3 5.6     8.1 8.4      9.5 9.8     12.3 12.6       15.1 15.4 }
-photo mask=CT  thickness=3<um> 
-
-etch oxide thickness=1 type=anisotropic
-etch silicon thickness=0.26 type=anisotropic
-etch polysilicon thickness=0.125 type=anisotropic
-strip photoresist
-
-#split CTIMP
-##########################################pplus
-
-implant    BF2 dose=@CTIMP@ energy=30 tilt=0 rotation=90      
-diffuse  time= 0.05  temp= 1000   flowN2=16
-
-####################################################################################contact
-deposit aluminum thickness=4.1
-
-#split DEVICE
-
-############################################
-contact name=gate x=0.1 y=1.2 replace point
-contact name=gate1 x=0.1 y=4.0  replace point
-contact name=source x=-2 y=1.0  replace point
-contact name=source1 x=4.0 y=1.25 replace point
-contact name=source2 x=4.0 y=4.0 replace point
-contact name=source3 x=4.0 y=7.0 replace point
-
-contact name=drain bottom 
-struct tdr=n@node@_#25final
-
-#split RMESH
-refinebox clear
-refinebox !keep.lines
-line clear
-
-pdbSet Grid AdaptiveField Refine.Abs.Error     1e37
-pdbSet Grid AdaptiveField Refine.Rel.Error     1e10
-pdbSet Grid AdaptiveField Refine.Target.Length 100.0
-pdbSet Grid Adaptive 1
-pdbSet Grid SnMesh DelaunayType boxmethod
-
-refinebox name= Substrate \
-   refine.max.edge= "0.5  0.5" \
-   refine.min.edge= "0.05 0.05" \
-   refine.fields= { NetActive } def.max.asinhdiff= 0.5 \
-   adaptive silicon add
-  
-   
-refinebox name= trench_Interface \
-   min= "0 0" \
-   max= "@<0.06+0.4>@ @PITCH@" \
-   min.normal.size= 0.01 normal.growth.ratio= 2.0 \
-   max.lateral.size= 1 \
-   interface.materials= {Silicon } all add
-   
-refinebox name= ct_Interface_1 Silicon \
-   min= "0 0.3" \
-   max= "@<0.2+0.1>@ 0.7" \
-   xrefine= {0.03  } yrefine= {0.03  }
-   
-
-refinebox name= ct_Interface_2 Silicon \
-   min= "0 3.3" \
-  max= "@<0.2+0.1>@ 3.7" \
-  xrefine= {0.03  } yrefine= {0.03  }
-
-
-refinebox name= poly_Interface \
-   min= "0 0" \
-  max= "@<0.06+0.4>@ @PITCH@" \
-   min.normal.size= 0.1 normal.growth.ratio= 2.0 \
-   max.lateral.size= 1 \
-   interface.materials= {PolySilicon} all add
-   
-refinebox silicon    min= "0 0" \
-   max= "@<0.06+0.4>@ @PITCH@" \
-  xrefine= {0.25  }  yrefine= { 0.25 }  add 
-
-refinebox name= Ref_IF Silicon \
-    min="-1 0" max="10.0 30" \
-    min.normal.size= 0.002 normal.growth.ratio= 1.3 \
-    interface.materials= { Silicon Oxide }  
-                                              
-refinebox remesh  
-struct tdr=n@node@                      
---------------------------------------------------------------------
-
-File {
-  Grid      = "@tdr@"	  
-  Parameter = "@parameter@"
-  Plot      = "@tdrdat@"
-  Current   = "@plot@"
-  Output    = "@log@"
-	
-}
-
-Electrode {
-
-{Name= "source" Voltage=0}
-{Name= "source1" Voltage=0}
-{Name= "gate" Voltage=0}
-{Name= "drain" Voltage=0}
-
-}
-
-Physics(MaterialInterface="Silicon/Oxide") {Charge(Conc=4.5e10)}
-
-Physics {
-
-	Temperature = 300
-	Mobility(
-		PhuMob Enormal
-		HighFieldSaturation
-	)
-	Recombination(
-		SRH( DopingDep TempDependence)	
-		Auger
-    Avalanche(Okuto)
-    )
-EffectiveIntrinsicDensity( OldSlotboom )
-
-}
-
-Plot{
-  eDensity hDensity
-  TotalCurrent/Vector eCurrent/Vector hCurrent/Vector
-  eMobility hMobility
-  eVelocity hVelocity
-  eQuasiFermi hQuasiFermi
-  Temperature
-  eTemperature  hTemperature
-  ElectricField/Vector Potential SpaceCharge
-  Doping DonorConcentration AcceptorConcentration
-  SRH Auger Band2Band 
-  AvalancheGeneration eAvalancheGeneration hAvalancheGeneration
-  eGradQuasiFermi/Vector hGradQuasiFermi/Vector
-  eEparallel hEparallel eENormal hENormal
-  BandGapNarrowing
-}
-
-Math {
-	RelErrControl
-	ExtendedPrecision
-	Extrapolate                               
-	Notdamped= 50
-	Iterations= 20
-	ExitOnFailure
-	Digits= 5 
-	RHSmin= 1e-10
-	# RefDens_eGradQuasiFermi_EParallelToInterface= 1.0e12
-	# RefDens_hGradQuasiFermi_EParallelToInterface= 1.0e12
-	Number_of_threads= 8
-
-}
-
-
-Solve {
-
-	## Initial Solution
-	Coupled(Iterations=100 LineSearchDamping=1e-4){ Poisson }
-	Coupled(Iterations=100 LineSearchDamping=1e-4){ Poisson Electron }
-	Coupled(Iterations=100 LineSearchDamping=1e-4){Poisson Electron Hole}   
-	
-	NewCurrentPrefix="BV_"
-	
-	## Ramp drain voltage until the device drain current exceeds 250 uA 
-	Quasistationary(
-	InitialStep= 1e-3 MinStep= 1e-12 MaxStep= 1
-	Increment= 1.3 Decrement= 2
-	Goal { Name="drain" Voltage= 200 }
-	BreakCriteria {Current (Contact="drain" Absval= 1e-12) }     
-	){ Coupled { Poisson Electron Hole } 
-	Plot ( FilePrefix = "n@node@_50" when ( Contact = drain Voltage = 50 ) NoOverwrite )
-	Plot ( FilePrefix = "n@node@_80" when ( Contact = drain Voltage = 80 ) NoOverwrite )
-	}   
-
-}
