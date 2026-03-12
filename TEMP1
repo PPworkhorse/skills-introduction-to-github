@@ -1,45 +1,83 @@
 # Copyright (C) 1994-2023 Synopsys Inc.
-# swbtree vW-2024.09-SP1, saved by gsub0
+# swbtree vW-2024.09-SP1, saved by swb
 
 # --- simulation flow
 sprocess sprocess "" {}
 sprocess TU "1" {1} R+
-sprocess WELL "1" {1} R+
+sprocess WELL "1" {1} V+
+sprocess dPW "4.5e12" {4.5e12 4.0e12 3.5e12 3.0e12} R
 sprocess POLY "1" {1} R+
 sprocess SPA "1" {1} R+
 sprocess SD "1" {1} R+
 sprocess ILD "1" {1} R+
 sprocess MESH "1" {1} R+
-IdVg sdevice "" {}
-IdVg Vdd "1.0" {5.0} V
-IdVg IdVg "1.0" {1} R
-PlotIdVg svisual "" {}
+Isub sdevice "" {}
+Isub Vd "-10" {-40} V
+Isub ava "1.0" {0.75} V
+Isub IdVg "1.0" {1} R
+PlotIsub svisual "" {}
 # --- variables
 # --- scenarios and parameter specs
 scenario default TU ""
 scenario default WELL ""
+scenario default dPW ""
 scenario default POLY ""
 scenario default SPA ""
 scenario default SD ""
 scenario default ILD ""
 scenario default MESH ""
-scenario default Vdd ""
+scenario default Vd ""
+scenario default ava ""
 scenario default IdVg ""
 # --- simulation tree
-0 38 0 {} {default} 0
-1 39 38 {1} {default} 0
-2 40 39 {1} {default} 0
-3 41 40 {1} {default} 0
-4 42 41 {1} {default} 0
-5 43 42 {1} {default} 0
-6 44 43 {1} {default} 0
-7 1 44 {1} {default} 0
-8 21 1 {} {default} 0
-9 23 21 {5.0} {default} 0
-10 25 23 {1} {default} 0
-11 27 25 {} {default} 0
-
-------------------------------------------------------------------
+0 1 0 {} {default} 0
+1 2 1 {1} {default} 0
+2 3 2 {1} {default} 0
+3 4 3 {4.5e12} {default} 0
+4 8 4 {1} {default} 0
+5 12 8 {1} {default} 0
+6 16 12 {1} {default} 0
+7 20 16 {1} {default} 0
+8 24 20 {1} {default} 0
+9 28 24 {} {default} 0
+10 32 28 {-40} {default} 0
+11 36 32 {0.75} {default} 0
+12 48 36 {1} {default} 0
+13 60 48 {} {default} 0
+3 5 3 {4.0e12} {default} 0
+4 9 5 {1} {default} 0
+5 13 9 {1} {default} 0
+6 17 13 {1} {default} 0
+7 21 17 {1} {default} 0
+8 25 21 {1} {default} 0
+9 29 25 {} {default} 0
+10 33 29 {-40} {default} 0
+11 39 33 {0.75} {default} 0
+12 51 39 {1} {default} 0
+13 63 51 {} {default} 0
+3 6 3 {3.5e12} {default} 0
+4 10 6 {1} {default} 0
+5 14 10 {1} {default} 0
+6 18 14 {1} {default} 0
+7 22 18 {1} {default} 0
+8 26 22 {1} {default} 0
+9 30 26 {} {default} 0
+10 34 30 {-40} {default} 0
+11 42 34 {0.75} {default} 0
+12 54 42 {1} {default} 0
+13 66 54 {} {default} 0
+3 7 3 {3.0e12} {default} 0
+4 11 7 {1} {default} 0
+5 15 11 {1} {default} 0
+6 19 15 {1} {default} 0
+7 23 19 {1} {default} 0
+8 27 23 {1} {default} 0
+9 31 27 {} {default} 0
+10 35 31 {-40} {default} 0
+11 45 35 {0.75} {default} 0
+12 57 45 {1} {default} 0
+13 69 57 {} {default} 0
+-----------------------------------------------------------
 #header
 
 
@@ -73,7 +111,7 @@ math coord.ucs
 #rem #   START SIMULATION 
 #rem #---------------------------------------------------------------------#
 line x location= 0.0 tag= top
-line x location= 5.0 tag= bottom
+line x location= 4.6 tag= bottom
 
 line y location= 0.0    tag= left
 line y location= 4.45   tag= right
@@ -88,12 +126,16 @@ grid set.min.normal.size= 0.001 \
 
 refinebox name=Global_Si Silicon       \
     min= "0 0" max= "5 4.45"  \
-    xrefine= "0.02 1.0 "                   \
+    xrefine= "0.02 1.0 0.1"                   \
     yrefine= "0.4"
 
 grid remesh 
 
 #split @TU@
+transform flip
+deposit material= {Silicon} type= isotropic  thickness= 0.5 fields.values= { Phosphorus= 1e18 }
+struct tdr= n@node@_A FullD
+transform flip
 
 deposit material= {Oxide} type= isotropic  thickness= 0.034
 
@@ -110,7 +152,6 @@ mask name= TU2 segments= { 3.95 4.45 }
 photo mask= TU2 thickness= 0.1
 etch material= { Oxide } type= anisotropic thickness= 0.1
 strip Photoresist
-struct tdr= n@node@_A FullD
 
 #split @WELL@
 
@@ -129,7 +170,7 @@ photo mask= PWELL thickness= 5.0
 struct tdr= n@node@_PWPR FullD
 implant Phosphorus dose= 1.0e12 energy= 1500 tilt= 0.0
 implant Boron dose= 2.0e12 energy= 200 tilt= 0.0
-implant Boron dose= 4.5e12 energy= 30 tilt= 0.0
+implant Boron dose= @dPW@ energy= 30 tilt= 0.0
 
 strip Photoresist
 
@@ -141,7 +182,7 @@ implant Phosphorus dose= 5.0e12 energy= 230 tilt= 0.0
 implant Phosphorus dose= 2.4e12 energy= 50 tilt= 0.0
 
 strip Photoresist
-
+ 
 temp_ramp name= well time= 0.03  temp= 600.0  ramprate= 250.0
 temp_ramp name= well time= 10<s> temp= 1020.0 ramprate= 0.0
 temp_ramp name= well time= 0.083 temp= 1020.0 ramprate= -90.0
@@ -205,11 +246,11 @@ refinebox name= SD Silicon       \
 grid remesh 
 
 mask name= NP segments= { 0.0 0.5 }
-mask name= PP segments= { 0.0 0.5 } negative
+mask name= PP segments= { 0.0 0.5 2.2 3.95 4.45}  negative
 
 photo mask= NP thickness= 1.0
 struct tdr= n@node@_NPPR FullD
-implant Phosphorus dose= 1.1e14 energy= 75 tilt= 45 rotation= 40 mult.rot= 4
+implant Phosphorus dose= 1.1e14 energy= 75 tilt= 40 rotation= 45 mult.rot= 4
 implant Arsenic    dose= 6.0e15 energy= 50 tilt= 0.0
 implant Phosphorus dose= 2.0e14 energy= 40 tilt= 0.0
 
@@ -224,7 +265,7 @@ diffuse stress.relax temp_ramp= SDN
 
 photo mask= PP thickness= 1.0
 struct tdr= n@node@_PPPR FullD
-implant Boron dose= 6.0e13 energy= 25.0 tilt= 45 rotation= 30  mult.rot= 4
+implant Boron dose= 6.0e13 energy= 25.0 tilt= 30 rotation= 45  mult.rot= 4
 implant Boron dose= 3.2e15 energy= 5.0 tilt= 0 
 implant Boron dose= 3.0e13 energy= 15.0 tilt= 0 
 
@@ -240,24 +281,24 @@ diffuse stress.relax temp_ramp= SDN
 
 #split @ILD@
 
-deposit material= { Tungsten } type= isotropic   thickness= 0.05
+deposit material= { Oxide } type= fill   coord= -0.7
 
-mask name= FP segments= { 0.0 2.1 3.4 4.45 }
+mask name= FP segments= { 0.0 2.36 3.06 4.45 } negative
 photo mask= FP thickness= 0.5
-etch material= { Tungsten } type= anisotropic   thickness= 0.1
+etch material= { Oxide } type= anisotropic   thickness= 0.56
 
 strip Photoresist
 
-deposit material= { Oxide } type= fill   coord= -0.7
+deposit material= { Tungsten } type= fill   coord= -0.7
 
-mask name= CT segments= { 0.0 0.35 0.65 2.5 3.2 4.1 4.3 4.45} negative
+mask name= CT segments= { 0.0 0.15 0.35 0.65 0.85 4.1 4.3 4.45} negative
 photo mask= CT thickness= 0.5
 etch material= { Oxide } type= anisotropic   thickness= 1.0
 strip Photoresist
 
 deposit material= { Tungsten } type= fill   coord= -0.75
 
-mask name= MFP segments= { 0.0 0.35 3.2 4.1 4.3 4.45 }
+mask name= MFP segments= { 0.0 0.15 0.35 0.65 3.06 4.1 4.3 4.45 }
 photo mask= MFP thickness= 0.5
 etch material= { Tungsten } type= anisotropic   thickness= 0.05
 strip Photoresist
@@ -292,7 +333,7 @@ grid adaptive set.min.normal.size= 0.001 \
 refinebox name= Ref_golbal \
     min="0 0" max="5 4.45" \
     refine.min.edge= "0.01 0.1" \
-    refine.max.edge= "0.05  0.2" \
+    refine.max.edge= "0.1  0.2" \
     refine.fields= { NetActive } def.max.asinhdiff= 1.0 \
     adaptive materials= { Silicon }
 
@@ -308,23 +349,29 @@ refinebox name= Ref_CT Silicon \
     min.normal.size= 0.005 normal.growth.ratio= 1.3 \
     interface.materials= { Tungsten Silicon }
 
+    
+    
 refinebox name= Ref_CHA Silicon \
-    min="-0.01 0.9" max="0.015 1.5" \
+    min="-0.01 0.9" max="0.015 4.0" \
     min.normal.size= 0.001 normal.growth.ratio= 1.3 \
     interface.materials= { Silicon Oxide }
       
 grid remesh
 
+
 select z= -1.0e20  name= NetActive store PolySilicon
 
-contact name= "gate"   point x= -0.1 y= 1.5  Poly      replace
-contact name= "source" point x= -0.1 y= 0.5  Tungsten  replace
-contact name= "drain"  point x= -0.1 y= 4.2  Tungsten  replace
+#transform cut location= 0.55 left !remesh
 
+contact name= "gate"   point x= -0.1 y= 1.5  Poly      replace
+contact name= "source" point x= -0.1 y= 0.75  Tungsten  replace
+#contact name= "substrate" box xlo= 1.5 xhi= 2.0 ylo= 0.558  yhi= 0.555  Silicon sidewall  
+contact name= "drain"  point x= -0.1 y= 4.2  Tungsten  replace
+contact name= "substrate" point x= -0.1 y= 0.25  Tungsten  replace
+contact name= "body" bottom
 struct tdr= n@node@ !Gas
 exit
-
------------------------------------------------------------------------------
+------------------------------------------------------------------
 #if @IdVg@ == 0
 #noexec
 #endif
@@ -332,12 +379,8 @@ exit
 #-- PMOS Specfication
 
 #define _Device_ pmos
-#define _CAR_    Hole
+#define _CAR_    Electron Hole
 #define _IALM_   IALMob(AutoOrientation PhononCombination=2)
-
-#define _Vdd_    @<-1.0*Vdd>@
-#define _VdLin_  -0.05
-#define _VdSat_  @<-1.1*Vdd>@
 
 File {
   Grid      = "n@previous@_fps.tdr"
@@ -352,17 +395,22 @@ File {
 Electrode {
   { Name="source"    Voltage=0.0 }
   { Name="drain"     Voltage=0.0 }
-  { Name="gate"      Voltage=0.0 }
+  { Name="gate"      Voltage=0.0 barrier= 0.4}
+  { Name="substrate" Voltage=0.0 }
+  { Name="body"      Voltage=0.0 }
 }
 
-Physics {Fermi}
+Physics {
+  AreaFactor= 20.0
+  Fermi }
 
 Physics (Material= Silicon) {
 	Mobility (
 	  Enormal (_IALM_) 
 	  HighFieldSaturation
 	)
-      Recombination(SRH Band2Band Avalanche)
+##      Recombination(SRH Band2Band(Model=Hurkx) Avalanche(Okuto))
+      Recombination(SRH Avalanche(Okuto))      
       EffectiveIntrinsicDensity(OldSlotboom)
       
 }
@@ -393,6 +441,7 @@ Plot{
 }
 
 Math {
+  Extendedprecision	
   Extrapolate
   Derivatives
   RelErrControl
@@ -413,26 +462,26 @@ Solve {
   Coupled ( Iterations=100 LineSearchDamping=1e-8 ){ Poisson  }
   Coupled { Poisson _CAR_  }
   Save ( FilePrefix="n@node@_init" )
-
+                                                             
   Quasistationary( 
-    InitialStep=1e-2 Increment=1.5 
-    MinStep=1e-6 MaxStep=0.5 
-    Goal { Name="drain" Voltage=_VdSat_ } 
+    InitialStep=1e-2 Increment=1.3 
+    MinStep=1e-6 MaxStep= 0.5                                                         
+    Goal { Name="drain" Voltage= @Vd@ } 
   ){ Coupled { Poisson _CAR_  } }
   Save ( FilePrefix="n@node@_VdSat" )
-
+                                                                              
   #-- Vg sweep for Vd=VdSat
-  NewCurrentPrefix= "IdVg_Isub_" 
+  NewCurrentPrefix= "Isub_" 
   Load ( FilePrefix="n@node@_VdSat" )
   Quasistationary( 
     DoZero 
     InitialStep=1e-2 Increment=1.2 
-    MinStep=1e-8 MaxStep=0.05 
-    Goal { Name="gate" Voltage=_Vdd_ } 
+    MinStep=1e-8 MaxStep= 0.01 
+    Goal { Name="gate" Voltage= -5 } 
   ){ Coupled { Poisson _CAR_  } }
 }
 
-----------------------------------------------------------------------------
+-------------------------------------------------------
 #setdep @previous@
 
 #----------------------------------------------------------------------#
@@ -442,7 +491,6 @@ lib::SetInfoDef 1
 set N     @node@
 set i     @node:index@
 set Vd    0.05
-set VdSat @<Vdd*1.1>@
 set Weff  1.0
 
 #- Automatic alternating color assignment tied to node index
@@ -456,23 +504,44 @@ set color   [lindex  $COLORS [expr $i%$NCOLORS]]
 echo "#########################################"
 echo "Plotting Id-Vg (Isub) curve"
 echo "#########################################"
-load_file IdVg_Isub_@plot@ -name PLT_Isub($N)
+load_file Isub_@plot@ -name PLT_Isub($N)
 
-if {[lsearch [list_plots] Plot_IdVg] == -1} {
-	create_plot -1d -name Plot_IdVg
+if {[lsearch [list_plots] Plot_Isub] == -1} {
+	create_plot -1d -name Plot_Isub
 }
-select_plots Plot_IdVg
+select_plots Plot_Isub
 
-set VgsSat [get_variable_data "gate OuterVoltage" -dataset PLT_Isub($N)]
-set IdsSat [get_variable_data "substrate TotalCurrent" -dataset PLT_Isub($N)]
-ext::AbsList -out absIdsSat -x $IdsSat ;# Compute absolute value of drain currents
-create_variable -name absIdSat -dataset PLT_Isub($N) -values $absIdsSat
+set Vgs [get_variable_data "gate InnerVoltage" -dataset PLT_Isub($N)]
+set Ids [get_variable_data "substrate TotalCurrent" -dataset PLT_Isub($N)]
 
-create_curve -name IdVgIsub($N) -dataset PLT_Isub($N) \
-	-axisX "gate OuterVoltage" -axisY "absIdSat"
+create_curve -name Isub($N) -dataset PLT_Isub($N) \
+	-axisX "gate InnerVoltage" -axisY "substrate TotalCurrent"
 	
-set_curve_prop IdVgIsub($N) -label "IdVg(Isub) " \
+set_curve_prop Isub($N) -label "Isub,PW=@dPW@" \
 	-color $color -line_style solid -line_width 3
+	
+===============================================
+#define ParFileDir .
 
-ext::ExtractExtremum -out Isub  -name "noprint"  -x $VgsSat -y $absIdsSat -type "max"
-puts "DOE: Isub_A_um [format %.2e  [expr ($Isub)]]"
+Material="Silicon" {
+
+  #includeext "ParFileDir/Siliconc110.par"	
+  
+  OkutoCrowell * Impact Ionization:
+{ * G_impact = alpha_n n v_drift_n  +  alpha_p p v_drift_p
+  * with alpha = a (1+c(T-300)) E^gamma exp[-(b (1+d(T-300)) /E )^delta]
+	a	= @<ava*0.426>@ ,	@<ava*0.243>@	# [1/cm]
+	b	= 4.8100e+05 ,	6.5300e+05	# [V/cm]
+	c	= 3.0500e-04 ,	5.3500e-04	# [1/K]
+	d	= 6.8600e-04 ,	5.6700e-04	# [1/K]
+	gamma	= 1 ,	1	# [1]
+	delta	= 2 ,	2	# [1]
+}
+ 
+HighFieldDependence:
+{ 
+	vsat0	= @<0.5*1.0700e+07>@ ,	@<0.5*8.3700e+06>@	# [1]
+}
+
+}
+
