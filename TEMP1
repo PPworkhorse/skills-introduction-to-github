@@ -1,511 +1,1113 @@
 # Copyright (C) 1994-2023 Synopsys Inc.
-# swbtree vW-2024.09-SP1, saved by swb
+# swbtree vW-2024.09-SP1, saved by gsub0
 
 # --- simulation flow
-NMOS sprocess "" {}
-NMOS Lch "0.5" {0.5} V
-NMOS PB "0" {0 1} V
-NMOS JFET "1" {0 1} V
-NMOS YJFET "2.0" {1.25} V
-NMOS Ypolyl "0" {0 1.0} V
-NMOS pWD "1e13" {3.5e13} V
-NMOS nJD "3e13" {3e11} V
-NMOS nPD "2e15" {4e15} V
-NMOS pPD "2e15" {1.0e15} V
-NMOS Process_Mesh "1.0" {1.0} V
-NMOS Sub_Doping "1.0e19" {1.0e19} V
-NMOS Ndrift_Thickness "10.0" {10.0} V
-NMOS Ndrift_Doping "2e15" {1e16} R
-NMOS GATE "1" {1} V+
-NMOS CONTL "0" {0 1} V
-NMOS tOXetch "0.5" {0.5 1.0} R
-NMOS Device_Mesh "1.0" {1.0} V+
-NMOS Type "X" {SplitPB Split Planer} R
-IdVg sdevice "" {}
-IdVg FC "1.8e12" {6e11} V
-IdVg AF "1.0e5" {1e7} V
-IdVg Tamb "300.0" {300.0} V
-IdVg Vd "10.0" {10.0} R
-Plot_IdVg svisual "" {}
-IdVd sdevice "" {}
-IdVd Vg "15.0" {15.0} R
-Plot_IdVd svisual "" {}
-BV sdevice "" {}
-BV b2b "0.1" {0.01} V
-BV Scale "1e-3" {1.0e5} R
-Plot_BV svisual "" {}
-Qg sdevice "" {}
-Qg Id1 "10.0" {10.0} R
-Plot_Qg svisual "" {}
-SW sdevice "" {}
-SW VgMax "8.0" {15.0} V
-SW Idc "200" {20} V
-SW Rgsw "1.0" {1.0} V
-SW Ldsw "10e-09" {10e-06} V
-SW Vdc "600" {600.0} R
-Plot_SW svisual "" {}
-SC sdevice "" {}
-SC Vx1 "300" {600} V
-SC ton "5e-6" {5e-6} V
-SC toff "10e-6" {10e-6} V
-SC Tdel "10e-9" {10e-9} R
-Plot_SC svisual "" {}
-UIS sdevice "" {}
-UIS PWidth "100e-6" {10e-6} V
-UIS L "100" {100} R
-Plot_UIS svisual "" {}
+sprocess sprocess "" {}
+sprocess Type "NMOS" {NMOS} V
+sprocess lgate "0.028" {10} R
+sprocess Well "1" {1} R+
+sprocess Poly "1" {1} R+
+sprocess HaloLDD "1" {1} V+
+sprocess dLDD "2.3" {2.3e13 2.29e13} V
+sprocess eLDD "75.2" {75.2 76.5 70.3} V
+sprocess tLDD "44.5" {44.5 44.7 43.5} R
+sprocess Spacer "1" {1} R+
+sprocess SD "1" {1} R+
+sprocess Mesh "1" {1} R+
+IdVg_lin sdevice "" {}
+IdVg_lin Vdd "1.05" {5.0} V
+IdVg_lin Vdlin "0.1" {0.05} R
+PlotIdVg_lin svisual "" {}
+IdVg_sat sdevice "" {}
+PlotIdVg_sat svisual "" {}
+BVD sdevice "" {}
+PlotBVD svisual "" {}
+Isub sdevice "" {}
+Plot_Isub svisual "" {}
 # --- variables
 # --- scenarios and parameter specs
-scenario default Lch ""
-scenario default PB ""
-scenario default JFET ""
-scenario default YJFET ""
-scenario default Ypolyl ""
-scenario default pWD ""
-scenario default nJD ""
-scenario default nPD ""
-scenario default pPD ""
-scenario default Process_Mesh ""
-scenario default Sub_Doping ""
-scenario default Ndrift_Thickness ""
-scenario default Ndrift_Doping ""
-scenario default GATE ""
-scenario default CONTL ""
-scenario default tOXetch ""
-scenario default Device_Mesh ""
 scenario default Type ""
-scenario default FC ""
-scenario default AF ""
-scenario default Tamb ""
-scenario default Vd ""
-scenario default Vg ""
-scenario default b2b ""
-scenario default Scale ""
-scenario default Id1 ""
-scenario default VgMax ""
-scenario default Idc ""
-scenario default Rgsw ""
-scenario default Ldsw ""
-scenario default Vdc ""
-scenario default Vx1 ""
-scenario default ton ""
-scenario default toff ""
-scenario default Tdel ""
-scenario default PWidth ""
-scenario default L ""
-scenario sensDOE_1 Lch ""
-scenario sensDOE_1 PB ""
-scenario sensDOE_1 JFET ""
-scenario sensDOE_1 YJFET ""
-scenario sensDOE_1 Ypolyl ""
-scenario sensDOE_1 pWD ""
-scenario sensDOE_1 nJD ""
-scenario sensDOE_1 nPD ""
-scenario sensDOE_1 pPD ""
-scenario sensDOE_1 Process_Mesh ""
-scenario sensDOE_1 Sub_Doping ""
-scenario sensDOE_1 Ndrift_Thickness ""
-scenario sensDOE_1 Ndrift_Doping ""
-scenario sensDOE_1 GATE ""
-scenario sensDOE_1 CONTL ""
-scenario sensDOE_1 tOXetch ""
-scenario sensDOE_1 Device_Mesh ""
-scenario sensDOE_1 Type ""
-scenario sensDOE_1 FC ""
-scenario sensDOE_1 AF ""
-scenario sensDOE_1 Tamb ""
-scenario sensDOE_1 Vd ""
-scenario sensDOE_1 Vg ""
-scenario sensDOE_1 b2b ""
-scenario sensDOE_1 Scale ""
-scenario sensDOE_1 Id1 ""
-scenario sensDOE_1 VgMax ""
-scenario sensDOE_1 Idc ""
-scenario sensDOE_1 Rgsw ""
-scenario sensDOE_1 Ldsw ""
-scenario sensDOE_1 Vdc ""
-scenario sensDOE_1 Vx1 ""
-scenario sensDOE_1 ton ""
-scenario sensDOE_1 toff ""
-scenario sensDOE_1 Tdel ""
-scenario sensDOE_1 PWidth ""
-scenario sensDOE_1 L ""
+scenario default lgate ""
+scenario default Well ""
+scenario default Poly ""
+scenario default HaloLDD ""
+scenario default dLDD ""
+scenario default eLDD ""
+scenario default tLDD ""
+scenario default Spacer ""
+scenario default SD ""
+scenario default Mesh ""
+scenario default Vdd ""
+scenario default Vdlin ""
 # --- simulation tree
 0 1 0 {} {default} 0
-1 2 1 {0.5} {default} 0
-2 3 2 {0} {default} 0
-3 5 3 {0} {default} 0
-4 7 5 {1.25} {default} 0
-5 9 7 {0} {default} 0
-6 288 9 {3.5e13} {default} 0
-7 289 288 {3e11} {default} 0
-8 290 289 {4e15} {default} 0
-9 291 290 {1.0e15} {default} 0
-10 292 291 {1.0} {default} 0
-11 293 292 {1.0e19} {default} 0
-12 294 293 {10.0} {default} 0
-13 426 294 {1e16} {default} 0
-14 427 426 {1} {default} 0
-15 428 427 {0} {default} 0
-16 429 428 {0.5} {default} 0
-17 430 429 {1.0} {default} 0
-18 431 430 {Planer} {default} 0
-19 432 431 {} {default} 0
-20 433 432 {6e11} {default} 0
-21 434 433 {1e7} {default} 0
-22 435 434 {300.0} {default} 0
-23 436 435 {10.0} {default} 0
-24 437 436 {} {default} 0
-25 438 437 {} {default} 0
-26 439 438 {15.0} {default} 0
-27 440 439 {} {default} 0
-28 441 440 {} {default} 0
-29 442 441 {0.01} {default} 0
-30 443 442 {1.0e5} {default} 0
-31 444 443 {} {default} 0
-32 445 444 {} {default} 0
-33 446 445 {10.0} {default} 0
-34 447 446 {} {default} 0
-35 448 447 {} {default} 0
-36 449 448 {15.0} {default} 0
-37 450 449 {20} {default} 0
-38 451 450 {1.0} {default} 0
-39 452 451 {10e-06} {default} 0
-40 453 452 {600.0} {default} 0
-41 454 453 {} {default} 0
-42 455 454 {} {default} 0
-43 456 455 {600} {default} 0
-44 457 456 {5e-6} {default} 0
-45 458 457 {10e-6} {default} 0
-46 459 458 {10e-9} {default} 0
-47 460 459 {} {default} 0
-48 461 460 {} {default} 0
-49 462 461 {10e-6} {default} 0
-50 463 462 {100} {default} 0
-51 464 463 {} {default} 0
-5 10 7 {1.0} {default} 0
-6 334 10 {3.5e13} {default} 0
-7 335 334 {3e11} {default} 0
-8 336 335 {4e15} {default} 0
-9 337 336 {1.0e15} {default} 0
-10 338 337 {1.0} {default} 0
-11 339 338 {1.0e19} {default} 0
-12 340 339 {10.0} {default} 0
-13 465 340 {1e16} {default} 0
-14 466 465 {1} {default} 0
-15 467 466 {0} {default} 0
-16 468 467 {0.5} {default} 0
-17 469 468 {1.0} {default} 0
-18 470 469 {Split} {default} 0
-19 471 470 {} {default} 0
-20 472 471 {6e11} {default} 0
-21 473 472 {1e7} {default} 0
-22 474 473 {300.0} {default} 0
-23 475 474 {10.0} {default} 0
-24 476 475 {} {default} 0
-25 477 476 {} {default} 0
-26 478 477 {15.0} {default} 0
-27 479 478 {} {default} 0
-28 480 479 {} {default} 0
-29 481 480 {0.01} {default} 0
-30 482 481 {1.0e5} {default} 0
-31 483 482 {} {default} 0
-32 484 483 {} {default} 0
-33 485 484 {10.0} {default} 0
-34 486 485 {} {default} 0
-35 487 486 {} {default} 0
-36 488 487 {15.0} {default} 0
-37 489 488 {20} {default} 0
-38 490 489 {1.0} {default} 0
-39 491 490 {10e-06} {default} 0
-40 492 491 {600.0} {default} 0
-41 493 492 {} {default} 0
-42 494 493 {} {default} 0
-43 495 494 {600} {default} 0
-44 496 495 {5e-6} {default} 0
-45 497 496 {10e-6} {default} 0
-46 498 497 {10e-9} {default} 0
-47 499 498 {} {default} 0
-48 500 499 {} {default} 0
-49 501 500 {10e-6} {default} 0
-50 502 501 {100} {default} 0
-51 503 502 {} {default} 0
-2 4 2 {1} {default} 0
-3 6 4 {1} {default} 0
-4 8 6 {1.25} {default} 0
-5 11 8 {1.0} {default} 0
-6 380 11 {3.5e13} {default} 0
-7 381 380 {3e11} {default} 0
-8 382 381 {4e15} {default} 0
-9 383 382 {1.0e15} {default} 0
-10 384 383 {1.0} {default} 0
-11 385 384 {1.0e19} {default} 0
-12 386 385 {10.0} {default} 0
-13 504 386 {1e16} {default} 0
-14 505 504 {1} {default} 0
-15 506 505 {1} {default} 0
-16 507 506 {1.0} {default} 0
-17 508 507 {1.0} {default} 0
-18 509 508 {SplitPB} {default} 0
-19 510 509 {} {default} 0
-20 511 510 {6e11} {default} 0
-21 512 511 {1e7} {default} 0
-22 513 512 {300.0} {default} 0
-23 514 513 {10.0} {default} 0
-24 515 514 {} {default} 0
-25 516 515 {} {default} 0
-26 517 516 {15.0} {default} 0
-27 518 517 {} {default} 0
-28 519 518 {} {default} 0
-29 520 519 {0.01} {default} 0
-30 521 520 {1.0e5} {default} 0
-31 522 521 {} {default} 0
-32 523 522 {} {default} 0
-33 524 523 {10.0} {default} 0
-34 525 524 {} {default} 0
-35 526 525 {} {default} 0
-36 527 526 {15.0} {default} 0
-37 528 527 {20} {default} 0
-38 529 528 {1.0} {default} 0
-39 530 529 {10e-06} {default} 0
-40 531 530 {600.0} {default} 0
-41 532 531 {} {default} 0
-42 533 532 {} {default} 0
-43 534 533 {600} {default} 0
-44 535 534 {5e-6} {default} 0
-45 536 535 {10e-6} {default} 0
-46 537 536 {10e-9} {default} 0
-47 538 537 {} {default} 0
-48 539 538 {} {default} 0
-49 540 539 {10e-6} {default} 0
-50 541 540 {100} {default} 0
-51 542 541 {} {default} 0
+1 2 1 {NMOS} {default} 0
+2 3 2 {10} {default} 0
+3 4 3 {1} {default} 0
+4 5 4 {1} {default} 0
+5 6 5 {1} {default} 0
+6 7 6 {2.3e13} {default} 0
+7 9 7 {75.2} {default} 0
+8 12 9 {44.5} {default} 0
+9 15 12 {1} {default} 0
+10 18 15 {1} {default} 0
+11 21 18 {1} {default} 0
+12 24 21 {} {default} 0
+13 27 24 {5.0} {default} 0
+14 30 27 {0.05} {default} 0
+15 33 30 {} {default} 0
+16 36 33 {} {default} 0
+17 39 36 {} {default} 0
+18 42 39 {} {default} 0
+19 45 42 {} {default} 0
+20 48 45 {} {default} 0
+21 51 48 {} {default} 0
+7 10 7 {76.5} {default} 0
+8 13 10 {43.5} {default} 0
+9 16 13 {1} {default} 0
+10 19 16 {1} {default} 0
+11 22 19 {1} {default} 0
+12 25 22 {} {default} 0
+13 28 25 {5.0} {default} 0
+14 31 28 {0.05} {default} 0
+15 34 31 {} {default} 0
+16 37 34 {} {default} 0
+17 40 37 {} {default} 0
+18 43 40 {} {default} 0
+19 46 43 {} {default} 0
+20 49 46 {} {default} 0
+21 52 49 {} {default} 0
+6 8 6 {2.29e13} {default} 0
+7 11 8 {70.3} {default} 0
+8 14 11 {44.7} {default} 0
+9 17 14 {1} {default} 0
+10 20 17 {1} {default} 0
+11 23 20 {1} {default} 0
+12 26 23 {} {default} 0
+13 29 26 {5.0} {default} 0
+14 32 29 {0.05} {default} 0
+15 35 32 {} {default} 0
+16 38 35 {} {default} 0
+17 41 38 {} {default} 0
+18 44 41 {} {default} 0
+19 47 44 {} {default} 0
+20 50 47 {} {default} 0
+21 53 50 {} {default} 0
+----------------------------------------------------------
+#postheader
 
--------------------------------------------------------
-
-## Two Dimensional Process Simulation of 4H-SiC SiliconCarbide Power MOSFET
-## --------------------------------------------------------------------
-## Global mesh settings and mesh in newly generated layers
-## --------------------------------------------------------------------
-grid set.min.normal.size= 0.002 \
-     set.normal.growth.ratio.2d= 1.5
-
-## SiliconCarbide interface refinement
-refinebox interface.materials= { SiliconCarbide } 
-
-fset Fastmode 0
-if { $Fastmode == 1} {
-    pdbSet ImplantData NoImplant 1
-    pdbSet Diffuse NoDiffusionReaction 1
-}
-
-## Log output level
-pdbSet InfoDefault 1
-
-## Multi-threading
-math numThreads= 8
-
-## Using Universal Coordinate System (x down | y right)
+# unified Coordinate system
 math coord.ucs
+# uncomment following line, if you have 4 CPU or more.
+math numThreads= 4
 
-## Calibrated set-up for Implantation of Dopants in 4H-SiC
-AdvancedCalibration 4H-SiC
-pdbSet ImplantData MonteCarlo 1
-pdbSet MCImplant Particles 5000
-pdbSet MCImplant Intervals dy 0.005
-pdbSet MCImplant Smoothing 1
-## Geometric Parameter Definitions..
+AdvancedCalibration
 
-fset tsub 10.0
-fset p_top 0.0
-fset p_epibot [expr $p_top + @Ndrift_Thickness@]
-fset p_bot [expr $p_epibot + $tsub]
-fset Xmax [expr @Ndrift_Thickness@ + $tsub]
+pdbSet ImplantData LeftBoundary Reflect
+pdbSet ImplantData RightBoundary Reflect
 
-fset Lch @Lch@
-#fset Yext 0.0
-fset pw_ledge @YJFET@
-fset np_ledge [expr $pw_ledge + $Lch] 
-fset np_redge [expr $np_ledge + 1.5]
-fset pp_redge [expr $np_redge + 0.5]
-fset Ymax [expr $pp_redge ]
 
-## -------------------------------------------------------------
-## Mask definitions
-## -------------------------------------------------------------
-mask name= PWELL left= $pw_ledge right= $Ymax
-mask name= JFET  left= $pw_ledge right= $Ymax negative
-mask name= NPLUS left= $np_ledge right= $np_redge
-mask name= PPLUS left= $np_redge right= $pp_redge
-mask name= CONT  left= [expr $np_redge - 0.25] right= [expr $pp_redge ] negative
+# Disable stress re-balancing after etch/depo step
+pdbSet Mechanics EtchDepoRelax 1
+pdbSet ImplantData Extrude 1
+pdbSet ImplantData DoseControl BeamDose 
+pdbSet InfoDefault 1
+pdbSet Oxide_Silicon Boundary BoundaryCondition ThreePhaseSegregation
 
-## Line commands
-line x location= $p_epibot tag= top
-line x location= $p_bot tag= bottom
+#rem #---------------------------------------------------------------------#
+#rem #   PARAMETERS & Initial boundary
+#rem #---------------------------------------------------------------------#
 
-line y location= 0.0 tag= left
-line y location= $pw_ledge tag= pw_ledge
-line y location= $np_ledge tag= np_ledge
-line y location= $np_redge tag= np_redge
-##line y location= $pp_redge tag= pp_redge
+fset Xtop 0
+
+fset Lg @lgate@
+
+fset Xbot 3
+fset Xepi 1.5
+fset Xj 1
+fset GateThick 0.3
+
+fset Lg2 [expr (0.5*@lgate@)]
+fset LP2C 0.07
+fset LCT 0.08
+fset LCTe2AA 0.15
+fset LSA [expr ($LP2C+$LCT+$LCTe2AA)]
+
+fset Ymin 0
+fset Ymax [expr ($Lg2+$LSA)]
+
+fset PolyReox 0.002
+fset Tox 0.027
+fset f     1.0
+fset Lsp1 0.05
+fset Lsp2 0.12   
+
+#endpostheader
+#--------------------------------------#
+## Initial Boundary
+#--------------------------------------#
+
+line x location= $Xtop tag= top
+line x location= $Xbot tag= bottom
+line y location= $Ymin tag= left
 line y location= $Ymax tag= right
 
-## Simulation Initialization
-region SiliconCarbide xlo= top xhi= bottom ylo= left yhi= right substrate
-#init field= Nitrogen concentration= @Sub_Doping@ miscut.tilt= 4.0 \
-#	miscut.toward= {1 1 0} 
-init field= Nitrogen concentration= @Sub_Doping@
+region Silicon substrate xlo= top xhi= bottom ylo= left yhi= right 
+init concentration= 1e15 field= Boron wafer.orient= {0 0 1} flat.orient= {1 1 0}  
 
-### Epi: Nitrogen drift layer
-refinebox name=Epi min= 0.0 max= $p_epibot xrefine= "0.01 0.1 0.01"
-grid remesh
+# -------------------------------------------------------------------- #
+grid set.min.normal.size= 0.001/$f \
+     set.normal.growth.ratio.2d= 2.0
 
-fset epi_thickness @Ndrift_Thickness@
-set epi_time 360
-set th1 $epi_thickness*0.1
-set th2 $epi_thickness*0.1
-set th3 $epi_thickness*0.8
-set time1 $epi_time*0.1
-set time2 $epi_time*0.1
-set time3 $epi_time*0.8
-deposit SiliconCarbide anisotropic thickness= $th1 species= Nitrogen concentration= @Ndrift_Doping@
-diffuse temperature=1600 time=$time1
-deposit SiliconCarbide anisotropic thickness= $th2 species= Nitrogen concentration= @Ndrift_Doping@
-diffuse temperature=1600 time=$time2                      
-deposit SiliconCarbide anisotropic thickness= $th3 species= Nitrogen concentration= @Ndrift_Doping@
-diffuse temperature=1600 time=$time3
-
-## P-Well implantation
-photo mask= PWELL thickness= 3.0
-refinebox name=PW SiliconCarbide       \
-    min= "0 0" max= "1.5 4"  \
-    xrefine= "0.01 0.1"                   \
-    yrefine= "0.02"
+refinebox name= Ref_global Silicon add  \
+min= "0.0 -99.9" max="3.0 99.9"  \
+xrefine= "0.02 0.5 " \
+yrefine= "$f*$Ymax*0.1"
 
 grid remesh
 
-implant Aluminum dose= @<pWD * 0.3>@ energy= 100 tilt= 0
-implant Aluminum dose= @<pWD * 0.4>@ energy= 200 tilt= 0
-#implant Aluminum dose= @<pWD * 0.4>@ energy= 400 tilt= 0
-#implant Aluminum dose= @<pWD * 0.3>@ energy= 500 tilt= 0
-struct tdr= n@node@_PW
-## Remove PhotoResist
-strip photo
 
-## N+ Source implantation
-photo mask= NPLUS thickness= 2.0
-refinebox name=NPLUS1 mask= NPLUS extrusion.min= 0.0 extrusion.max= 0.4 extend= 0.2 xrefine= { 0.01 0.02 } yrefine= { 0.01 0.02 0.01 }
-refinebox name=NPLUS2 mask= NPLUS min= 0.0 max= 0.3 mask.edge.mns= 0.01 mask.edge.ngr= 1.2 mask.edge.refine.extent= 0.8
-grid remesh
+# ------------------------------------
+#split @Well@
+# ------------------------------------
 
-## Nplus
-implant Nitrogen dose= @<nPD * 0.1>@ energy= 60   tilt= 0
-implant Nitrogen dose= @<nPD * 0.1>@ energy= 80   tilt= 0
-implant Nitrogen dose= @<nPD * 0.4>@ energy= 100  tilt= 0
-implant Nitrogen dose= @<nPD * 0.4>@ energy= 120  tilt= 0
-struct tdr= n@node@_NP
-## Remove PhotoResist
-strip photo
+##------------------------------------------------------------------
+#----global mesh refine-------------------------
+#--------------------------------------------------
 
-#if @JFET@ == 1
-photo mask= JFET thickness= 2.5
-refinebox name= JFET1 mask= JFET extrusion.min= 0.0 extrusion.max= 1.5 extend= 0.5 xrefine= 0.1
-refinebox name= JFET2 mask= JFET min= 0.0 max= 1.0 mask.edge.mns= 0.02 mask.edge.ngr= 1.1 mask.edge.refine.extent= 0.5
-grid remesh
+	refinebox name= Ref_well Silicon add  \
+	min= "0.0 -99.9" max="0.5 99.9"  \
+	xrefine= "$f*0.02 $f*0.04 $f*$Xbot*0.06 " \
+	yrefine= "$f*$Ymax*0.25"
+ 
+	grid remesh
 
-implant Nitrogen dose= @<nJD>@ energy= 100 tilt= 0
-implant Nitrogen dose= @<nJD>@ energy= 200 tilt= 0
-implant Nitrogen dose= @<nJD>@ energy= 300 tilt= 0
-struct tdr= n@node@_JFET
-strip photoresist
-#endif
+##-----Well oxide screen oxide-----------
+deposit material= {Oxide} type= isotropic  thickness= 0.005
 
-#if @PB@ == 1
-## P+ Source implantation
-mask name= PPLUSA segments= { 0.0 0.4 $np_redge $pp_redge }
-photo mask= PPLUSA thickness= 1.5
-refinebox name= PPLUS1 mask= PPLUSA extrusion.min= 0.0 extrusion.max= 0.5 extend= 0.15 xrefine= 0.02  yrefine= { 0.01 0.02 }
-refinebox name= PPLUS2 mask= PPLUSA min= 0.0 max= 0.5 mask.edge.mns= 0.01 mask.edge.ngr= 1.2 mask.edge.refine.extent= 0.8
-grid remesh
-#else
-photo mask= PPLUS thickness= 1.5
-refinebox name= PPLUS1 mask= PPLUS extrusion.min= 0.0 extrusion.max= 0.5 extend= 0.15 xrefine= 0.02  yrefine= { 0.01 0.02 }
-refinebox name= PPLUS2 mask= PPLUS min= 0.0 max= 0.5 mask.edge.mns= 0.01 mask.edge.ngr= 1.2 mask.edge.refine.extent= 0.8
-grid remesh
-#endif
+##------well implant--------
 
+implant Boron dose= 1e13   energy= 250 tilt= 0 rotation= 0 
+implant Boron dose= 1.5e13 energy= 160 tilt= 0 rotation= 0 
+implant Boron dose= 2.4e12 energy= 25  tilt= 0 rotation= 0 
 
+#----well anneal--------------------------------------------                                   
+# -------------------------------------------------------------------- #
+temp_ramp name= well time= 0.03   temp= 600.0  ramprate= 250.0
+temp_ramp name= well time= 0.333  temp= 1050.0 ramprate= 0.0
+temp_ramp name= well time= 0.083  temp= 1050.0 ramprate= -90.0
 
-## Pplus 
-implant Aluminum dose= @<pPD * 0.7>@ energy= 30 tilt= 0
-implant Aluminum dose= @<pPD * 0.3>@ energy= 60 tilt= 0 
+diffuse stress.relax temp_ramp= well
 
-struct tdr= n@node@_PP
+##---well screen oxide remove-------------------
+etch type=cmp material= { all } coord=0.0
+                    
+# ------------------------------------
+#split @Poly@
+# ------------------------------------
 
-## Remove PhotoResist
+## ---------- gate oxidation --------------------------------------
+deposit material= {Oxide} type= isotropic  rate= {1.0} time= $Tox
+
+temp_ramp name= gateox time= 24 temp= 600.0 ramprate= 0.0972
+temp_ramp name= gateox time= 20 temp= 740.0 ramprate= 0.0
+temp_ramp name= gateox time= 5.6<s> temp= 740.0 ramprate= -25.0
+diffuse stress.relax temp_ramp= gateox
+
+##-----Poly mask define--------------------
+mask name=GATE left=$Ymin right=$Lg2  negative
+# ---- poly silicon deposition,pre-doping and etching --------
+deposit material= {Poly} type= anisotropic  thickness= $GateThick
+
+##------Poly etching----------------
+photo mask=GATE thickness=0.1
+etch material= {Poly} type= anisotropic rate= { $GateThick } time=1.1
+
 strip photoresist
 
-## High Temperature Annealing
-diffuse time= 10<min> temperature= 1800<C>
+## ---------- reoxidation -----------------------------------------
+deposit material= {Oxide} type= isotropic  rate= { $PolyReox } time= 1.0
 
-## Gate oxidation -- wet oxidation
-diffuse time= 300.0 temp= 1215 H2O
+## ---------- PolyReox spacer etching --------------------------------
+etch material= {Oxide} type= anisotropic rate= { $PolyReox } time= 1.5
+deposit nitride isotropic thickness= 0.01
+etch nitride anisotropic thickness= 0.015
 
-#split GATE
+# ------------------------------------
+#split @HaloLDD@
+# ------------------------------------
 
-## Poly gate formation
-#if @Ypolyl@ == 1
-mask name= POLY  left= $pw_ledge-0.4  right= $np_ledge negative
-#else
-mask name= POLY  left= 0.0  right= $np_ledge negative
-#endif
-deposit PolySilicon anisotropic mask= POLY thickness= 0.2
-
-## ILD deposition
-deposit Oxide thickness= 0.5 isotropic
-
-## Etch source contact
-mask name= CONTA left= 0.0 right= 0.4 negative
-etch Oxide thickness= 0.8 anisotropic mask= CONT
-
-#if @CONTL@ == 1
-etch Oxide thickness= @tOXetch@ anisotropic mask= CONTA
-#endif
-
-## Aluminum deposition for the source contact
-deposit Aluminum thickness= 1.0 isotropic
-
-#split Device_Mesh
-
-## Contacts placement for electrical simulation
-contact name= gate point x= -0.2 y= 1.6 PolySilicon
-contact name= source point x= -1.0 y= $np_redge Aluminum
-contact name= drain bottom
+# --- refinebox for halo implants ----------------------- #
+	refinebox name= Ref_LDD Silicon   \
+	min= "0.0 $Lg2-0.1" max="$Xj+0.1 $Ymax"  \
+	xrefine= "$f*0.005  $f*0.05 " \
+	yrefine= "$f*0.02" 
+ 
+	grid remesh
+	
+##------LDD implant screen ox------
+deposit material= {Oxide} type= anisotropic   rate= { 0.002 } time= 1.0
 
 
-## Re-meshing for device simulations
+# --- ldd implantation ---
+
+implant Phosphorus dose= @dLDD@ energy= @eLDD@ tilt= @tLDD@ rotation= 0 mult.rot= 4 
+
+diffuse temperature= 950 time= 3<s>
+
+#split @Spacer@
+# -------------------------------------------------------------------- #
+## ---------- side wall spacer -----------------------------------
+
+deposit material= {Oxide} type= isotropic rate= {1.0} time= $Lsp1        
+deposit material= {Nitride} type= isotropic rate= {1.0} time= $Lsp2
+
+etch material= {Nitride} type= anisotropic rate= 1.8*$Lsp2 time= 1.0
+etch material= {Oxide} type= anisotropic rate= 1.4*$Lsp1 time= 1.0
+
+#split @SD@
+
+# --- source/drain-implantation ---
+
+implant Phosphorus dose= 3.5e14 energy= 35 tilt= 0 rotation= 0 
+implant Arsenic dose= 1.5e15 energy= 25 tilt= 0 rotation= 0
+
+## -------Spike+laser annealing-----------------
+temp_ramp name= spike time= 0.025  temp= 600  ramprate= 300.0
+temp_ramp name= spike time= 0.01   temp= 1050 ramprate= 0.0
+temp_ramp name= spike time= 0.05   temp= 1050 ramprate= -150.0
+diffuse temp_ramp= spike
+
+#split @Mesh@
+# -------------------------------------------------------------------- #
+# Re-Meshing for Device Simulation
+# -------------------------------------------------------------------- #
+etch material= {Oxide} type= anisotropic rate= 0.015 time= 1.0     
+
+select z= 1.0e20  name= NetActive store PolySilicon
+
+##---------------Remeshing for device simulation--------##
+# clear the process simulation mesh
 refinebox clear
 line clear
 
-pdbSet Grid AdaptiveField Refine.Abs.Error 1.0e37
+# Mesh Multiplication factor for device
+set fd 1.0
+
+# Set very high values for adaptive meshing parameters
+pdbSet Grid AdaptiveField Refine.Abs.Error 1e37
 pdbSet Grid AdaptiveField Refine.Rel.Error 1e10
+pdbSet Grid AdaptiveField Refine.Target.Length 100.0
+
+# Set high quality delaunay meshes
 pdbSet Grid SnMesh DelaunayType boxmethod
+pdbSet Grid SnMesh CoplanarityAngle 179
+pdbSet Grid SnMesh MaxPoints 500000
+pdbSet Grid SnMesh MaxNeighborRatio 1e6
+                                              
+# Set the interface spacing
+pdbSet Grid SnMesh max.box.angle.2d 179
+grid set.min.normal.size= 0.002/$fd \
+     set.normal.growth.ratio.2d= 4.0 \
+     set.max.points= 500000 \
+     set.max.neighbor.ratio= 1e6
 
-refinebox name= Global \
- refine.max.edge= "1.0 0.5" refine.min.edge= "@< 0.03 * Device_Mesh >@ @< 0.03 * Device_Mesh >@" \
- refine.fields= { NetActive } def.max.asinhdiff= 1 \
- adaptive SiliconCarbide
- 
-refinebox name= Ref_active \
- refine.max.edge= "0.3 0.3" refine.min.edge= "@< 0.01 * Device_Mesh >@ @< 0.01 * Device_Mesh >@" \
- refine.fields= { NetActive } def.max.asinhdiff= 1 \
- adaptive SiliconCarbide min= "0.0 0.0" max= "3.0 5.0"
- 
-## Oxide interface refinement 
-refinebox name= Ref_channel min.normal.size= @< 0.002 * Device_Mesh >@ normal.growth.ratio= 2.5 \
- interface.materials= { SiliconCarbide } min= "0 $pw_ledge" max= "0.2 $np_ledge"
+####-----------refine for device simulation------------
 
-grid remesh
+	refinebox name= Global_Si Silicon\
+	min= "-0.3 -99.9" max="3.0 99.9"  \
+	xrefine= "$f*0.01 $f*0.1 " \
+	yrefine= "0.5 0.1" 
+	                                                           
+	refinebox name= Channel_punch Silicon adaptive \
+	min= {-0.001 $Lg2-0.2 } \
+	max= {0.4 $Lg2+0.4 }  \
+	refine.fields= { NetActive } def.max.asinhdiff= 1.0 \
+	refine.min.edge= "$f*0.002 $f*0.02 " \
+	refine.max.edge= "$f*0.01 $f*0.02 " 
+	
+    refinebox name= Channel Silicon \
+	min= "-0.001 $Ymin" max="0.02 $Lg+0.1"  \
+	xrefine= "$f*0.001 $f*0.005 " \
+	yrefine= "0.25 0.05"                        
 
-## Save TDR for device simulation
+    refinebox name= SD Silicon \
+	min= "-0.001 $Ymax-0.25" max="0.02 $Ymax"  \
+	xrefine= "$f*0.001 $f*0.002 " \
+	yrefine= "0.002" 	
+	
+	refinebox name= ChannelIF interface.materials= {Silicon} \
+	min= "-0.001 $Ymin" max="0.02 $Lg+0.1"  \
+    min.normal.size= $f*0.001 normal.growth.ratio= 1.3  
+    
+    grid remesh
+
+# Contacts
+
+transform reflect left !remesh
+
+#contact name= "gate"    box xlo= -$GateThick xhi= -$GateThick-0.02 ylo= -$Lg2+0.01 yhi= $Lg-0.01 PolySilicon  add
+contact name= "gate"   point x= -$GateThick*0.5 y= 0.0  PolySilicon  add
+contact name= "drain"   box xlo= -0.001 xhi= 0.001 ylo= $Ymax-0.1 yhi= $Ymax-0.02 Silicon  add
+contact name= "source"  box xlo= -0.001 xhi= 0.001 ylo= -$Ymax+0.1 yhi= -$Ymax+0.02 Silicon  add
+contact name= Substrate bottom
+
 struct tdr= n@node@ !Gas
+
+exit
+-----------------------------------------------------------
+
+#define _Device_ nmos
+#define _SIGN_   1.0
+#define _CAR_    Electron Hole
+#define _IALM_   IALMob(AutoOrientation)
+
+#define _Vdd_    @Vdd@	
+#define _VdLin_  @Vdlin@
+#define _VdSat_  @Vdd@
+
+
+
+File {
+	* input files:
+	Grid=       "@tdr@"
+	Piezo=      "@tdr@"
+	Parameters= "@parameter@"
+	* output files:
+	Plot=       "@tdrdat@"
+	Current=    "@plot@"
+	Output=     "@log@"
+}
+
+Electrode {
+	{ Name= "source"    Voltage= 0.0   }
+	{ Name= "drain"     Voltage= 0.0   }
+	{ Name= "gate"      Voltage= 0.0 barrier= -0.845 }
+	{ Name= "Substrate" Voltage= 0.0   }
+}
+
+
+
+Physics {
+	Temperature= 300
+	AreaFactor= 1.0
+	Fermi
+}
+
+Physics (Material="Silicon") {
+	Mobility (
+	  Enormal (_IALM_) 
+	  HighFieldSaturation
+	)
+    EffectiveIntrinsicDensity(OldSlotboom)
+      
+    Recombination(
+    SRH( DopingDependence TempDependence)
+    Auger
+    Band2Band(Model=Hurkx)
+    Avalanche(Okuto)
+    )     
+}
+
+
+Plot{
+	eDensity hDensity
+	TotalCurrent/Vector eCurrent/Vector hCurrent/Vector
+	eMobility hMobility
+	eVelocity hVelocity
+	eQuasiFermi hQuasiFermi
+	eTemperature hTemperature Temperature
+	ElectricField/Vector Potential SpaceCharge
+	Doping DonorConcentration AcceptorConcentration
+	Band2Band SRH Auger
+	AvalancheGeneration eAvalancheGeneration hAvalancheGeneration
+	eGradQuasiFermi/Vector hGradQuasiFermi/Vector
+	eEparallel hEparallel eENormal hENormal
+	BandGap
+	BandGapNarrowing
+	Affinity
+	ConductionBand ValenceBand
+	eTrappedCharge hTrappedCharge
+	*--Stress related data
+	StressXX StressYY StressZZ StressXY StressXZ StressYZ
+	eMobilityStressFactorXX eMobilityStressFactorYY eMobilityStressFactorZZ
+	eMobilityStressFactorXY eMobilityStressFactorXZ eMobilityStressFactorXY
+	hMobilityStressFactorXX hMobilityStressFactorYY hMobilityStressFactorZZ
+	hMobilityStressFactorYZ hMobilityStressFactorXZ hMobilityStressFactorXY
+}
+
+
+Math {
+  Extrapolate
+  RelErrControl
+  Digits= 5
+  Notdamped= 50
+  Iterations= 15
+  RHSmin= 1e-8
+  Method= Pardiso	  
+  DirectCurrent
+  ExitOnFailure
+  TensorGridAniso
+  StressMobilityDependence = TensorFactor
+  Number_of_Threads= 8 
+  RefDens_eGradQuasiFermi_Zero= 1e12
+  RefDens_hGradQuasiFermi_Zero= 1e12
+  -CheckUndefinedModels	  
+	* Please uncomment if you have 4 CPUs or more
+	Number_of_Threads= 4
+}
+
+Solve {
+	*- Creating initial guess:
+	NewCurrentPrefix="n@node@_init"
+	Coupled(Iterations= 1000 LineSearchDamping= 1e-8){ Poisson }
+	Coupled { Poisson _CAR_ }
+
+	*- Ramp to drain to Vd
+	Quasistationary(
+		InitialStep= 1e-2 Increment= 1.35
+		MinStep= 1e-6 MaxStep= 0.2
+		Goal { Name="drain" Voltage= @<_SIGN_*Vdlin>@ }
+	){ Coupled { Poisson Electron Hole  } }
+	
+	*- Vg sweep
+	NewCurrentPrefix=""
+	Quasistationary(
+		DoZero
+		InitialStep= 1e-3 Increment= 1.35
+		MinStep= 1e-6 MaxStep= 0.02
+		Goal { Name="gate" Voltage= @<_SIGN_*Vdd>@ }
+	){ Coupled { Poisson Electron Hole }
+		CurrentPlot( Time=(Range=(0 1) Intervals= 500)  )
+	}
+}
+--------------------------------------------------------------
+
+#define _Device_ nmos
+#define _SIGN_   1.0
+#define _CAR_    Electron Hole
+#define _IALM_   IALMob(AutoOrientation)
+
+#define _Vdd_    @Vdd@	
+#define _VdLin_  @Vdlin@
+#define _VdSat_  @Vdd@
+
+
+
+File {
+	* input files:
+	Grid=       "@tdr@"
+	Piezo=      "@tdr@"
+	Parameters= "@parameter@"
+	* output files:
+	Plot=       "@tdrdat@"
+	Current=    "@plot@"
+	Output=     "@log@"
+}
+
+Electrode {
+	{ Name= "source"    Voltage= 0.0   }
+	{ Name= "drain"     Voltage= 0.0   }
+	{ Name= "gate"      Voltage= 0.0 barrier= -0.845 }
+	{ Name= "Substrate" Voltage= 0.0   }
+}
+
+
+
+Physics {
+	Temperature= 300
+	AreaFactor= 1.0
+	Fermi
+}
+
+Physics (Material="Silicon") {
+	Mobility (
+	  Enormal (_IALM_) 
+	  HighFieldSaturation
+	)
+    EffectiveIntrinsicDensity(OldSlotboom)
+      
+    Recombination(
+    SRH( DopingDependence TempDependence)
+    Auger
+    Band2Band(Model=Hurkx)
+    Avalanche(Okuto)
+    )     
+}
+
+
+Plot{
+	eDensity hDensity
+	TotalCurrent/Vector eCurrent/Vector hCurrent/Vector
+	eMobility hMobility
+	eVelocity hVelocity
+	eQuasiFermi hQuasiFermi
+	eTemperature hTemperature Temperature
+	ElectricField/Vector Potential SpaceCharge
+	Doping DonorConcentration AcceptorConcentration
+	Band2Band SRH Auger
+	AvalancheGeneration eAvalancheGeneration hAvalancheGeneration
+	eGradQuasiFermi/Vector hGradQuasiFermi/Vector
+	eEparallel hEparallel eENormal hENormal
+	BandGap
+	BandGapNarrowing
+	Affinity
+	ConductionBand ValenceBand
+	eTrappedCharge hTrappedCharge
+	*--Stress related data
+	StressXX StressYY StressZZ StressXY StressXZ StressYZ
+	eMobilityStressFactorXX eMobilityStressFactorYY eMobilityStressFactorZZ
+	eMobilityStressFactorXY eMobilityStressFactorXZ eMobilityStressFactorXY
+	hMobilityStressFactorXX hMobilityStressFactorYY hMobilityStressFactorZZ
+	hMobilityStressFactorYZ hMobilityStressFactorXZ hMobilityStressFactorXY
+}
+
+
+Math {
+  Extrapolate
+  RelErrControl
+  Digits= 5
+  Notdamped= 50
+  Iterations= 15
+  RHSmin= 1e-8
+  Method= Pardiso	  
+  DirectCurrent
+  ExitOnFailure
+  TensorGridAniso
+  StressMobilityDependence = TensorFactor
+  Number_of_Threads= 8 
+  RefDens_eGradQuasiFermi_Zero= 1e12
+  RefDens_hGradQuasiFermi_Zero= 1e12
+  -CheckUndefinedModels	  
+	* Please uncomment if you have 4 CPUs or more
+	Number_of_Threads= 4
+}
+
+Solve {
+	*- Creating initial guess:
+	NewCurrentPrefix="n@node@_init"
+	Coupled(Iterations= 1000 LineSearchDamping= 1e-8){ Poisson }
+	Coupled { Poisson _CAR_ }
+
+	*- Ramp to drain to Vd
+	Quasistationary(
+		InitialStep= 1e-2 Increment= 1.35
+		MinStep= 1e-6 MaxStep= 0.2
+		Goal { Name="drain" Voltage= @<_SIGN_*Vdd>@ }
+	){ Coupled { Poisson Electron Hole  } }
+	
+	*- Vg sweep
+	NewCurrentPrefix=""
+	Quasistationary(
+		DoZero
+		InitialStep= 1e-3 Increment= 1.35
+		MinStep= 1e-6 MaxStep= 0.04
+		Goal { Name="gate" Voltage= @<_SIGN_*Vdd>@ }
+	){ Coupled { Poisson Electron Hole }
+		CurrentPlot( Time=(Range=(0 1) Intervals= 500)  )
+	}
+}
+-----------------------------------------------------------------------------------
+
+#define _Device_ nmos
+#define _SIGN_   1.0
+#define _CAR_    Electron Hole
+#define _IALM_   IALMob(AutoOrientation)
+
+#define _Vdd_    @Vdd@	
+#define _VdLin_  @Vdlin@
+#define _VdSat_  @Vdd@
+
+
+
+File {
+	* input files:
+	Grid=       "@tdr@"
+	Piezo=      "@tdr@"
+	Parameters= "@parameter@"
+	* output files:
+	Plot=       "@tdrdat@"
+	Current=    "@plot@"
+	Output=     "@log@"
+}
+
+Electrode {
+	{ Name= "source"    Voltage= 0.0   }
+	{ Name= "drain"     Voltage= 0.0   }
+	{ Name= "gate"      Voltage= 0.0 barrier= -0.845 }
+	{ Name= "Substrate" Voltage= 0.0   }
+}
+
+
+
+Physics {
+	Temperature= 300
+	AreaFactor= 1.0
+	Fermi
+}
+
+Physics (Material="Silicon") {
+	Mobility (
+	  Enormal (_IALM_) 
+	  HighFieldSaturation
+	)
+    EffectiveIntrinsicDensity(OldSlotboom)
+      
+    Recombination(
+    SRH( DopingDependence TempDependence)
+    Auger
+##    Band2Band(Model=Hurkx)
+    Avalanche(Okuto)
+    )     
+}
+
+
+Plot{
+	eDensity hDensity
+	TotalCurrent/Vector eCurrent/Vector hCurrent/Vector
+	eMobility hMobility
+	eVelocity hVelocity
+	eQuasiFermi hQuasiFermi
+	eTemperature hTemperature Temperature
+	ElectricField/Vector Potential SpaceCharge
+	Doping DonorConcentration AcceptorConcentration
+	Band2Band SRH Auger
+	AvalancheGeneration eAvalancheGeneration hAvalancheGeneration
+	eGradQuasiFermi/Vector hGradQuasiFermi/Vector
+	eEparallel hEparallel eENormal hENormal
+	BandGap
+	BandGapNarrowing
+	Affinity
+	ConductionBand ValenceBand
+	eTrappedCharge hTrappedCharge
+	*--Stress related data
+	StressXX StressYY StressZZ StressXY StressXZ StressYZ
+	eMobilityStressFactorXX eMobilityStressFactorYY eMobilityStressFactorZZ
+	eMobilityStressFactorXY eMobilityStressFactorXZ eMobilityStressFactorXY
+	hMobilityStressFactorXX hMobilityStressFactorYY hMobilityStressFactorZZ
+	hMobilityStressFactorYZ hMobilityStressFactorXZ hMobilityStressFactorXY
+}
+
+
+Math {
+  Extrapolate
+  RelErrControl
+  Digits= 5
+  Notdamped= 50
+  Iterations= 15
+  RHSmin= 1e-8
+  Method= Pardiso	  
+  DirectCurrent
+  ExitOnFailure
+  TensorGridAniso
+  StressMobilityDependence = TensorFactor
+  Number_of_Threads= 8 
+  RefDens_eGradQuasiFermi_Zero= 1e12
+  RefDens_hGradQuasiFermi_Zero= 1e12
+  -CheckUndefinedModels	  
+	* Please uncomment if you have 4 CPUs or more
+	Number_of_Threads= 4
+}
+
+Solve {
+	*- Creating initial guess:
+	NewCurrentPrefix="n@node@_init"
+	Coupled(Iterations= 1000 LineSearchDamping= 1e-8){ Poisson }
+	Coupled { Poisson _CAR_ }
+
+	*- Ramp to drain to Vd
+	Quasistationary(
+		InitialStep= 1e-2 Increment= 1.35
+		MinStep= 1e-6 MaxStep= 0.2
+		Goal { Name="drain" Voltage= @<_SIGN_*1.1*Vdd>@ }
+	){ Coupled { Poisson Electron Hole  } }
+	
+	*- Vg sweep
+	NewCurrentPrefix="Isub_"
+	Quasistationary(
+		DoZero
+		InitialStep= 1e-3 Increment= 1.35
+		MinStep= 1e-6 MaxStep= 0.02
+		Goal { Name="gate" Voltage= @<_SIGN_*Vdd>@ }
+	){ Coupled { Poisson Electron Hole }
+		CurrentPlot( Time=(Range=(0 1) Intervals= 500)  )
+	}
+}
+------------------------------------------------------------------------------
+
+#define _Device_ nmos
+#define _SIGN_   1.0
+#define _CAR_    Electron Hole
+#define _IALM_   IALMob(AutoOrientation)
+
+#define _Vdd_    @Vdd@	
+#define _VdLin_  @Vdlin@
+#define _VdSat_  @Vdd@
+
+
+
+File {
+	* input files:
+	Grid=       "@tdr@"
+	Piezo=      "@tdr@"
+	Parameters= "@parameter@"
+	* output files:
+	Plot=       "@tdrdat@"
+	Current=    "@plot@"
+	Output=     "@log@"
+}
+
+Electrode {
+	{ Name= "source"    Voltage= 0.0   }
+	{ Name= "drain"     Voltage= 0.0   }
+	{ Name= "gate"      Voltage= 0.0 barrier= -0.845 }
+	{ Name= "Substrate" Voltage= 0.0   }
+}
+
+
+
+Physics {
+	Temperature= 300
+	AreaFactor= 1.0
+	Fermi
+}
+
+Physics (Material="Silicon") {
+	Mobility (
+	  Enormal (_IALM_) 
+	  HighFieldSaturation
+	)
+    EffectiveIntrinsicDensity(OldSlotboom)
+      
+    Recombination(
+    SRH( DopingDependence TempDependence)
+    Auger
+    Band2Band(Model=Hurkx)
+    Avalanche(Okuto)
+    )     
+}
+
+
+Plot{
+	eDensity hDensity
+	TotalCurrent/Vector eCurrent/Vector hCurrent/Vector
+	eMobility hMobility
+	eVelocity hVelocity
+	eQuasiFermi hQuasiFermi
+	eTemperature hTemperature Temperature
+	ElectricField/Vector Potential SpaceCharge
+	Doping DonorConcentration AcceptorConcentration
+	Band2Band SRH Auger
+	AvalancheGeneration eAvalancheGeneration hAvalancheGeneration
+	eGradQuasiFermi/Vector hGradQuasiFermi/Vector
+	eEparallel hEparallel eENormal hENormal
+	BandGap
+	BandGapNarrowing
+	Affinity
+	ConductionBand ValenceBand
+	eTrappedCharge hTrappedCharge
+	*--Stress related data
+	StressXX StressYY StressZZ StressXY StressXZ StressYZ
+	eMobilityStressFactorXX eMobilityStressFactorYY eMobilityStressFactorZZ
+	eMobilityStressFactorXY eMobilityStressFactorXZ eMobilityStressFactorXY
+	hMobilityStressFactorXX hMobilityStressFactorYY hMobilityStressFactorZZ
+	hMobilityStressFactorYZ hMobilityStressFactorXZ hMobilityStressFactorXY
+}
+
+
+Math {
+  Extrapolate
+  RelErrControl
+  Digits= 5
+  Notdamped= 50
+  Iterations= 15
+  RHSmin= 1e-8
+  Method= Pardiso	  
+  DirectCurrent
+  ExitOnFailure
+  TensorGridAniso
+  StressMobilityDependence = TensorFactor
+  Number_of_Threads= 8 
+  RefDens_eGradQuasiFermi_Zero= 1e12
+  RefDens_hGradQuasiFermi_Zero= 1e12
+  -CheckUndefinedModels	  
+	* Please uncomment if you have 4 CPUs or more
+	Number_of_Threads= 4
+}
+
+Solve {
+	*- Creating initial guess:
+	NewCurrentPrefix="n@node@_init"
+	Coupled(Iterations= 1000 LineSearchDamping= 1e-8){ Poisson }
+	Coupled { Poisson _CAR_ }
+
+	*- Vg sweep
+	NewCurrentPrefix="BVD_"
+	Quasistationary(
+##		BreakCriteria { Current(contact="drain" AbsVal= 2.0e-13) }
+		DoZero
+		InitialStep= 1e-3 Increment= 1.35
+		MinStep= 1e-6 MaxStep= 0.1
+		Goal { Name="drain" Voltage= 12.0 }
+	){ Coupled { Poisson Electron Hole }
+		CurrentPlot( Time=(Range=(0 1) Intervals= 120)  )
+	}
+}
+-----------------------------------------------------------------------------
+
+#----------------------------------------------------------------------#
+
+#----------------------------------------------------------------------#
+load_library extract
+lib::SetInfoDef 1
+#----------------------------------------------------------------------#
+set N     @node@
+set i     @node:index@
+set Lg    @lgate@
+set Vd    @Vdlin@
+set Vg    @Vdd@
+set Type  @Type@
+puts ""
+puts "Gate Length: $Lg um \n"
+
+set ID "$Type"
+set N   ${Type}_${N}
+
+#- Automatic alternating color assignment tied to node index
+#----------------------------------------------------------------------#
+set COLORS  [list green blue red orange magenta violet brown]
+set NCOLORS [llength $COLORS]
+set color   [lindex  $COLORS [expr $i%$NCOLORS]]
+
+#- Plotting IdVg
+#----------------------------------------------------------------------#
+echo "#########################################"
+echo "Plotting Id-Vg (lin) curve"
+echo "#########################################"
+load_file @plot@ -name PLT_Lin($N)
+
+if {[lsearch [list_plots] Plot_IdVg] == -1} {
+	create_plot -1d -name Plot_IdVg
+}
+select_plots Plot_IdVg
+
+set Vgs [get_variable_data "gate OuterVoltage" -dataset PLT_Lin($N)]
+set Ids [get_variable_data "drain TotalCurrent" -dataset PLT_Lin($N)]
+ext::AbsList -out absIds -x $Ids ;# Compute absolute value of drain currents
+create_variable -name absId -dataset PLT_Lin($N) -values $absIds
+
+create_curve -name IdVgLin($N) -dataset PLT_Lin($N) \
+	-axisX "gate OuterVoltage" -axisY "absId"
+	
+set_curve_prop IdVgLin($N) -label "IdVg(Lin) ($ID Lg=$Lg Vd=$Vd)" \
+	-color $color -line_style solid -line_width 3
+	 
+set_plot_prop -title "I<sub>d</sub>-V<sub>gs</sub> Curve" -title_font_size 16 -show_legend
+set_axis_prop -axis x -title {Gate Voltage [V]} \
+	-title_font_size 16 -scale_font_size 14 -type linear 
+set_axis_prop -axis y -title {Drain Current [A/<greek>m</greek>m]} \
+	-title_font_size 16 -scale_font_size 14 -type log
+set_legend_prop -label_font_size 12 -location bottom_right -label_font_att bold
+
+#- Extraction
+#----------------------------------------------------------------------#
+echo "#########################################"
+echo "Extracting parameters from Id-Vg (lin) curve"
+echo "#########################################"
+
+#- Defining current level for Vti extraction
+#----------------------------------------------------------------------#
+set Io    [expr 100e-9/$Lg] ; # [A/um]
+if { $Type == "NMOS" } { set SIGN 1.0 } else { set SIGN -1.0 }
+
+#ext::ExtractVtgm     -out Vt     -name "Vtgm"   -v $Vgs -i $absIds 
+ext::ExtractVti      -out Vti  	 -name "VtiLin" -v $Vgs -i $absIds  -io $Io 
+ext::ExtractExtremum -out Idmax  -name "noprint"  -x $Vgs -y $absIds -type "max"
+
+#echo "Vt (Max gm method) is [format %.3g $Vt] V"
+echo "Vti (Vg at Io= [format %.3e $Io] A/um) is [format %.3f $Vti] V"
+puts "DOE: Idlin_uA_um [format %.2f  [expr $Idmax*1e6]]"
+
+=====================================================
+
+
+#----------------------------------------------------------------------#
+
+#----------------------------------------------------------------------#
+load_library extract
+lib::SetInfoDef 1
+#----------------------------------------------------------------------#
+set N     @node@
+set i     @node:index@
+set Lg    @lgate@
+set Vd    @Vdd@
+set Vg    @Vdd@
+set Type  @Type@
+puts ""
+puts "Gate Length: $Lg um \n"
+
+set ID "$Type"
+set N   ${Type}_${N}
+
+#- Automatic alternating color assignment tied to node index
+#----------------------------------------------------------------------#
+set COLORS  [list green blue red orange magenta violet brown]
+set NCOLORS [llength $COLORS]
+set color   [lindex  $COLORS [expr $i%$NCOLORS]]
+
+#- Plotting IdVg
+#----------------------------------------------------------------------#
+echo "#########################################"
+echo "Plotting Id-Vg (sat) curve"
+echo "#########################################"
+load_file @plot@ -name PLT_Sat($N)
+
+if {[lsearch [list_plots] Plot_IdVg] == -1} {
+	create_plot -1d -name Plot_IdVg
+}
+select_plots Plot_IdVg
+
+set Vgs [get_variable_data "gate OuterVoltage" -dataset PLT_Sat($N)]
+set Ids [get_variable_data "drain TotalCurrent" -dataset PLT_Sat($N)]
+ext::AbsList -out absIds -x $Ids ;# Compute absolute value of drain currents
+create_variable -name absId -dataset PLT_Sat($N) -values $absIds
+
+
+create_curve -name IdVgSat($N) -dataset PLT_Sat($N) \
+	-axisX "gate OuterVoltage" -axisY "absId"
+	
+set_curve_prop IdVgSat($N) -label "IdVg(Sat) ($ID Lg=$Lg Vd=$Vd)" \
+	-color $color -line_style solid -line_width 3
+	 
+set_plot_prop -title "I<sub>d</sub>-V<sub>gs</sub> Curve" -title_font_size 16 -show_legend
+set_axis_prop -axis x -title {Gate Voltage [V]} \
+	-title_font_size 16 -scale_font_size 14 -type linear 
+set_axis_prop -axis y -title {Drain Current [A/<greek>m</greek>m]} \
+	-title_font_size 16 -scale_font_size 14 -type log
+set_legend_prop -label_font_size 12 -location bottom_right -label_font_att bold
+
+#- Extraction
+#----------------------------------------------------------------------#
+echo "#########################################"
+echo "Extracting parameters from Id-Vg (sat) curve"
+echo "#########################################"
+
+#- Defining current level for Vti extraction
+#----------------------------------------------------------------------#
+set Io    [expr 100e-9/$Lg] ; # [A/um]
+if { $Type == "NMOS" } { set SIGN 1.0 } else { set SIGN -1.0 }
+
+ext::ExtractVti      -out Vti    -name "VtiSat" -v $Vgs -i $absIds -io $Io 
+ext::ExtractExtremum -out Idmax  -name "noprint"  -x $Vgs -y $absIds -type "max"
+ext::ExtractIoff     -out Ioff   -name "noprint"   -v $Vgs -i $absIds -vo [expr $SIGN*1e-4] 
+
+echo "Vti (Vg at Io= [format %.3e $Io] A/um) is [format %.3f $Vti] V"
+puts "DOE: Idsat_uA_um [format %.2f  [expr $Idmax*1e6]]"
+puts "DOE: Idoff_A_um [format %.2e  [expr $Ioff]]"
+
+=========================================================
+
+#----------------------------------------------------------------------#
+
+#----------------------------------------------------------------------#
+load_library extract
+lib::SetInfoDef 1
+#----------------------------------------------------------------------#
+set N     @node@
+set i     @node:index@
+set Lg    @lgate@
+set Type  @Type@
+puts ""
+puts "Gate Length: $Lg um \n"
+
+set ID "$Type"
+set N   ${Type}_${N}
+
+#- Automatic alternating color assignment tied to node index
+#----------------------------------------------------------------------#
+set COLORS  [list green blue red orange magenta violet brown]
+set NCOLORS [llength $COLORS]
+set color   [lindex  $COLORS [expr $i%$NCOLORS]]
+
+#- Plotting IdVg
+#----------------------------------------------------------------------#
+echo "#########################################"
+echo "Plotting Id-Vg (sat) curve"
+echo "#########################################"
+load_file BVD_@plot@ -name PLT_BV($N)
+
+#----------------------------------------------------------------------#
+echo "#########################################"
+echo "Plotting Id-Vd curve : Breakdown voltage characteristics"
+echo "#########################################"
+if {[lsearch [list_plots] Plot_BV] == -1} {
+	create_plot -1d -name Plot_BV
+}
+select_plots Plot_BV
+
+set Vds [get_variable_data "drain InnerVoltage" -dataset PLT_BV($N)]
+set Ids [get_variable_data "drain TotalCurrent" -dataset PLT_BV($N)]
+
+create_curve -name BV($N) -dataset PLT_BV($N) \
+	-axisX "drain InnerVoltage" -axisY "drain TotalCurrent"
+	
+set_curve_prop BV($N) -label "BV" \
+	-color $color -line_style solid -line_width 3
+set_axis_prop -plot Plot_BV -axis x -title { Vd [V]} \
+		      -title_font_size 18 -scale_font_size 16 -title_font_att bold 
+		      
+set_axis_prop -plot Plot_BV -axis y -title {Id [A]}  -type linear \
+		      -title_font_size 18 -scale_font_size 16 -title_font_att bold 
+
+#----------------------------------------------------------------------#
+echo "#########################################"
+echo "BV Extraction"
+echo "#########################################"
+#----------------------------------------------------------------------#
+## Breakdown voltage at which Id reaches 0.1 Amp
+set Io 2e-13
+ext::ExtractBVi -out BV -name "noprint" -v $Vds -i $Ids  -io $Io 
+puts "DOE: BV [format %.3f $BV]"
+
+=====================================================
+#setdep @previous@
+
+#----------------------------------------------------------------------#
+load_library extract
+lib::SetInfoDef 1
+#----------------------------------------------------------------------#
+set N     @node@
+set i     @node:index@
+set Weff  1.0
+
+#- Automatic alternating color assignment tied to node index
+#----------------------------------------------------------------------#
+set COLORS  [list green blue red orange magenta violet brown]
+set NCOLORS [llength $COLORS]
+set color   [lindex  $COLORS [expr $i%$NCOLORS]]
+
+#- Plotting IdVg
+#----------------------------------------------------------------------#
+echo "#########################################"
+echo "Plotting Id-Vg (Isub) curve"
+echo "#########################################"
+load_file Isub_@plot@ -name PLT_Isub($N)
+
+if {[lsearch [list_plots] Plot_Isub] == -1} {
+	create_plot -1d -name Plot_Isub
+}
+select_plots Plot_Isub
+
+set Vgs [get_variable_data "gate OuterVoltage" -dataset PLT_Isub($N)]
+set Ids [get_variable_data "Substrate TotalCurrent" -dataset PLT_Isub($N)]
+ext::AbsList -out absIds -x $Ids ;# Compute absolute value of drain currents
+create_variable -name absId -dataset PLT_Isub($N) -values $absIds
+
+create_curve -name Isub($N) -dataset PLT_Isub($N) \
+	-axisX "gate OuterVoltage" -axisY "absId"
+	
+set_curve_prop Isub($N) -label "Isub" \
+	-color $color -line_style solid -line_width 3
+	
+ext::ExtractExtremum -out Isub  -name "noprint"  -x $Vgs -y $absIds -type "max"
+puts "DOE: Isub_uA_um [format %.2f  [expr $Isub*1e6]]"
