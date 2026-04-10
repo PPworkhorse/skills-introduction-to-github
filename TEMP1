@@ -2,452 +2,492 @@
 # swbtree vW-2024.09-SP1, saved by gsub0
 
 # --- simulation flow
-sprocess sprocess "" {}
-sprocess Well "1" {1} R+
-sprocess Poly "1" {1} R+
-sprocess HaloLDD "1" {1} R+
-sprocess Spacer "1" {1} R+
-sprocess SD "1" {1} R+
-sprocess Silicide "1" {1} R+
-sprocess Mesh "1" {1} R+
-BVdss sdevice "" {}
-PlotBV svisual "" {}
+sde sde "" {}
+sde Gate_Len "0.04" {0.04} V
+sde Tox "0.00243" {0.00243} V
+sde SD_Depth "0.086" {0.086} V
+sde SD_Peak "1e20" {1e20} V
+sde Poly_Doping "1e20" {1e20} V
+sde Well_Depth "0.198" {0.198} V
+sde Well_Pos "0.084" {0.084} V
+sde Well_Peak "4.08e17" {4.08e17} V
+sde LDD_Depth "0.012" {0.012} V
+sde LDD_Factor "0.665" {0.665} V
+sde LDD_Peak "2.64e19" {2.64e19} V
+sde Halo_Depth "0.058" {0.058} V
+sde Halo_Factor "0.719" {0.719} V
+sde Halo_Peak "4.48e18" {4.48e18} V
+sde Halo_Pos "0.019" {0.019} V
+sde Spacer_Len "0.012" {0.012} V
+sde Stress "1.44e9" {1.44e9} R
+IdVg sdevice "" {}
+IdVg Vdlin "0.1" {0.1} V
+IdVg Vdd "1.0" {1.1} V
+IdVg Gate_Width "0.12" {0.12} R
+PlotIdVg svisual "" {}
 # --- variables
 # --- scenarios and parameter specs
-scenario default Well ""
-scenario default Poly ""
-scenario default HaloLDD ""
-scenario default Spacer ""
-scenario default SD ""
-scenario default Silicide ""
-scenario default Mesh ""
-scenario pMOS Well ""
-scenario pMOS Poly ""
-scenario pMOS HaloLDD ""
-scenario pMOS Spacer ""
-scenario pMOS SD ""
-scenario pMOS Silicide ""
-scenario pMOS Mesh ""
-scenario nMOS Well ""
-scenario nMOS Poly ""
-scenario nMOS HaloLDD ""
-scenario nMOS Spacer ""
-scenario nMOS SD ""
-scenario nMOS Silicide ""
-scenario nMOS Mesh ""
+scenario default Gate_Len ""
+scenario default Tox ""
+scenario default SD_Depth ""
+scenario default SD_Peak ""
+scenario default Poly_Doping ""
+scenario default Well_Depth ""
+scenario default Well_Pos ""
+scenario default Well_Peak ""
+scenario default LDD_Depth ""
+scenario default LDD_Factor ""
+scenario default LDD_Peak ""
+scenario default Halo_Depth ""
+scenario default Halo_Factor ""
+scenario default Halo_Peak ""
+scenario default Halo_Pos ""
+scenario default Spacer_Len ""
+scenario default Stress ""
+scenario default Vdlin ""
+scenario default Vdd ""
+scenario default Gate_Width ""
 # --- simulation tree
 0 1 0 {} {default} 0
-1 2 1 {1} {default} 0
-2 3 2 {1} {default} 0
-3 4 3 {1} {default} 0
-4 5 4 {1} {default} 0
-5 6 5 {1} {default} 0
-6 7 6 {1} {default} 0
-7 8 7 {1} {default} 0
-8 12 8 {} {default} 0
-9 11 12 {} {default} 0
+1 2 1 {0.04} {default} 0
+2 3 2 {0.00243} {default} 0
+3 4 3 {0.086} {default} 0
+4 5 4 {1e20} {default} 0
+5 6 5 {1e20} {default} 0
+6 7 6 {0.198} {default} 0
+7 8 7 {0.084} {default} 0
+8 9 8 {4.08e17} {default} 0
+9 10 9 {0.012} {default} 0
+10 11 10 {0.665} {default} 0
+11 12 11 {2.64e19} {default} 0
+12 13 12 {0.058} {default} 0
+13 14 13 {0.719} {default} 0
+14 15 14 {4.48e18} {default} 0
+15 16 15 {0.019} {default} 0
+16 17 16 {0.012} {default} 0
+17 18 17 {1.44e9} {default} 0
+18 19 18 {} {default} 0
+19 20 19 {0.1} {default} 0
+20 21 20 {1.1} {default} 0
+21 22 21 {0.12} {default} 0
+22 23 22 {} {default} 0
 
--------------------------------------------------
+---------------------------------------------------------------
+;define parameter
+(define Lg @Gate_Len@)
+(define Lspa @Spacer_Len@)
+(define Lsd 0.068)
+(define Tox @Tox@)
+(define Tpoly 0.03)
 
-# unified Coordinate system
-math coord.ucs
-# uncomment following line, if you have 4 CPU or more.
-math numThreads= 8
+(define Xgox (- 0 Tox))
+(define Xpoly (- Tox Tpoly))
 
-AdvancedCalibration
-
-pdbSet ImplantData LeftBoundary Reflect
-pdbSet ImplantData RightBoundary Reflect
-
-# Enable stress history
-pdbSet Mechanics StressHistory 1
-pdbSet Mechanics StressRelaxFactor 1
-pdbSet Silicon Mechanics Anisotropic 1
-
-# Disable stress re-balancing after etch/depo step
-pdbSet Mechanics EtchDepoRelax 1
-pdbSet ImplantData Extrude 1
-pdbSet ImplantData DoseControl BeamDose 
-pdbSet InfoDefault 1
-pdbSet Oxide_Silicon Boundary BoundaryCondition ThreePhaseSegregation
-
-#rem #---------------------------------------------------------------------#
-#rem #   PARAMETERS & Initial boundary
-#rem #---------------------------------------------------------------------#
-
-fset Xbot 75
-fset Xtop 0
-
-fset LSCT  2.0
-fset LCT   1.0  
-fset LSP2C 2.0
-fset Leff 3.0
-fset LP2S 10.0
-fset LPOVS 12.0
-fset LSTI 35.0
-fset LPC [expr ($Leff+$LSTI*0.4+$LPOVS)]
-fset LS2C 2.0
-
-fset LPBD [expr ($LSCT+$LCT+$LSP2C+$Leff)]
-fset LDR [expr ($LP2S+$LSTI+$LS2C+$LSCT+$LCT+$LSP2C)]
-
-fset Ymin 0
-fset Ymax [expr ($LPBD+$LDR)]
-
-fset GateThick 0.3
-fset PolyReox 0.01
-fset Tox 0.1
-fset f     1.0
-fset Lsp1 0.03
-fset Lsp2 0.07
-
-#--------------------------------------#
-## Initial Boundary
-#--------------------------------------#
-
-line x location= $Xtop tag= top
-line x location= $Xbot tag= bottom
-line y location= $Ymin tag= left
-line y location= $Ymax tag= right
-
-region Silicon substrate xlo= top xhi= bottom ylo= left yhi= right 
-init concentration= 5e15 field= Boron wafer.orient= {0 0 1} flat.orient= {1 1 0}  
-
-# -------------------------------------------------------------------- #
-grid set.min.normal.size= 0.01/$f \
-     set.normal.growth.ratio.2d= 2.0
-     
-##------------------------------------------------------------------
-#----global mesh refine-------------------------
-#--------------------------------------------------
- 
-#split @Well@
-# ------------------------------------
-
-#--------well mesh refine-------------#
-	refinebox name= Ref_G Silicon add  \
-	min= "0.0 -99.9" max="75.0 99.9"  \
-	xrefine= "2.0 " \
-	yrefine= "2.0"
+(define Ymin (- 0 (+ (/ Lg 2) (+ Lspa Lsd)) ))
+(define Ymax (+ 0 (+ (/ Lg 2) (+ Lspa Lsd)) ))
+(define Yspl  (- 0 (+ (/ Lg 2) Lspa)))
+(define Yspr  (+ 0 (+ (/ Lg 2) Lspa)))
+(define Ygl  (- 0 (/ Lg 2) ))
+(define Ygr  (+ 0 (/ Lg 2) ))
 	
-	grid remesh
+; Creating rectangular regions  
+(sdegeo:create-rectangle
+  (position 0.0 Ymin   0.0) (position 0.2 Ymax   0.0) 
+  "Silicon" "R.Sub" ) 
+(sdegeo:create-rectangle
+  (position Xgox Ygl 0.0) (position 0.0 Ygr   0.0) 
+  "Oxide" "R.Gateox" ) 
+(sdegeo:set-default-boolean "BAB")
+(sdegeo:create-rectangle   
+  (position Xpoly Yspl   0.0) (position 0.0 Yspr 0.0) 
+  "Nitride" "R.Spacer" )    
+(sdegeo:set-default-boolean "ABA")
+(sdegeo:create-rectangle                                               
+  (position Xpoly Ygl   0.0) (position Xgox Ygr 0.0) 
+  "PolySilicon" "R.Polygate" )
 
-etch Silicon anisotropic thickness= 55
-deposit Silicon anisotropic thickness= 55 fields.values= { Phosphorus= 6e14 }
+; Rounding edges                                            
+(sde:define-parameter "fillet-radius" 0.01 0.0 0.0 )
+(sdegeo:fillet-2d (find-vertex-id (position Xpoly Yspl 0.0)) fillet-radius)
+(sdegeo:fillet-2d (find-vertex-id (position Xpoly Yspr 0.0)) fillet-radius)
 
-mask name= STI segments= { $Ymin $LPBD+$LP2S $LPBD+$LP2S+$LSTI $Ymax } negative
-photo mask= STI thickness= 0.5
-etch Silicon thickness= 0.6 trapezoidal angle= 85 
-strip photoresist
+;-------------------------------------------------------------------------------
+;-- Specification of doping profiles to be inluded during meshing --------------
+;-------------------------------------------------------------------------------
 
-etch Silicon isotropic thickness= 0.05
-deposit Silicon isotropic thickness= 0.05 fields.values= { Phosphorus= 6e14 }
+; Defining constant doping levels in a region
+(sdedr:define-constant-profile "Const.Poly" "ArsenicActiveConcentration" @Poly_Doping@)
+(sdedr:define-constant-profile-region "PlaceCD.Poly" "Const.Poly" "R.Polygate")
 
-deposit oxide fill coord= 0.0
-##-----Well oxide screen oxide-----------
-deposit material= {Oxide} type= isotropic  rate= { 0.005 } time= 1.0
+(sdedr:define-constant-profile "SS.Sub" "Stress" @Stress@)
+(sdedr:define-constant-profile-region "SSCD.Sub" "SS.Sub" "R.Sub")
 
-#--------well mesh refine-------------#
-	refinebox name= Ref_well Silicon add  \
-	min= "0.0 0.0" max="4.0 $LPBD+1.0"  \
-	xrefine= "0.02 0.2 " \
-	yrefine= "0.2"
-	
-	grid remesh
+(sdedr:define-refeval-window "BaseLine.Well" 
+  "Line" (position 0.0 Ymin 0.0) (position 0.0 Ymax 0.0))
 
-##------well implant--------
+(sdedr:define-gaussian-profile "Gauss.Well"                        
+  "BoronActiveConcentration" "PeakPos" @Well_Pos@ "PeakVal" @Well_Peak@
+  "ValueAtDepth" 5e16 "Depth" @Well_Depth@ "Gauss" "Factor" 0.5)
 
-mask name= PBD left= $Ymin right= $LPBD 
-photo mask= PBD thickness= 10.0
-struct tdr=n@node@_PBDPR FullD
+(sdedr:define-analytical-profile-placement "PlaceAP.Well"
+  "Gauss.Well" "BaseLine.Well" "Both" "NoReplace" "Eval")
 
-implant Boron dose= 1e12   energy= 2000 tilt= 0.0 rotation= 0 
-implant Boron dose= 1e12   energy= 1600 tilt= 0.0 rotation= 0 
-implant Boron dose= 1e12   energy= 1200 tilt= 0.0 rotation= 0 
-implant Boron dose= 1e12   energy= 800 tilt= 0.0 rotation= 0 
-implant Boron dose= 1e12   energy= 200 tilt= 0.0 rotation= 0 
-implant Boron dose= 2e12   energy= 30 tilt= 0.0 rotation= 0
+; Defining analytic doping profiles
+; Step 1: base line definitions
+(sdedr:define-refeval-window "BaseLine.Source" 
+  "Line" (position 0.0 Ymin 0.0) (position 0.0 (- Yspl 0.005) 0.0))
+(sdedr:define-refeval-window "BaseLine.Drain" 
+  "Line" (position 0.0 (+ Yspr 0.005) 0.0) (position 0.0 Ymax 0.0))
 
-strip photoresist
+(sdedr:define-refeval-window "BaseLine.SourceExt" 
+  "Line" (position 0.0 Ymin 0.0) (position 0.0 (- Ygl 0.005) 0.0))
+(sdedr:define-refeval-window "BaseLine.DrainExt" 
+  "Line" (position 0.0 (+ Ygr 0.005) 0.0) (position 0.0 Ymax 0.0))
 
-#----well anneal--------------------------------------------
-# -------------------------------------------------------------------- #
-temp_ramp name= well time= 10<min>  temp= 600.0  t.final= 1100
-temp_ramp name= well time= 120<min>  temp= 1100.0 
-temp_ramp name= well time= 30<min>  temp= 1100.0 t.final= 600
+(sdedr:define-refeval-window "BaseLine.SourceHALO" 
+  "Line" (position 0.0 Ymin 0.0) (position 0.0 (- Yspl 0.00) 0.0))
+(sdedr:define-refeval-window "BaseLine.DrainHALO" 
+  "Line" (position 0.0 (+ Yspr 0.0) 0.0) (position 0.0 Ymax 0.0))
 
-diffuse stress.relax temp_ramp= well
+; Step 2: Profile and placement definitions
+(sdedr:define-analytical-profile-placement "PlaceAP.Source"
+  "Gauss.SourceDrain" "BaseLine.Source" "Negative" "NoReplace" "Eval")
 
-##---well screen oxide remove-------------------
-etch type=cmp material= { all } coord=0.0
+(sdedr:define-gaussian-profile "Gauss.SourceDrain"
+  "ArsenicActiveConcentration" "PeakPos" 0.0 "PeakVal" @SD_Peak@
+  "ValueAtDepth" 4e17 "Depth" @SD_Depth@ "Gauss" "Factor" 0.05)
 
-# ------------------------------------
-#split @Poly@
-# ------------------------------------
+(sdedr:define-analytical-profile-placement "PlaceAP.Drain"
+  "Gauss.SourceDrain" "BaseLine.Drain" "Negative" "NoReplace" "Eval")
 
-## ---------- gate oxidation --------------------------------------
-deposit material= {Oxide} type= isotropic  rate= {1.0} time= $Tox
+(sdedr:define-analytical-profile-placement "PlaceAP.SourceExt"
+  "Gauss.SourceDrainExt" "BaseLine.SourceExt" "Negative" "NoReplace" "Eval")
 
-##-----Poly mask define--------------------
-mask name=GATE left=$LSCT+$LCT+$LSP2C right=$LSCT+$LCT+$LSP2C+$LPC  negative
-# ---- poly silicon deposition,pre-doping and etching --------
-deposit material= {Poly} type= anisotropic  thickness= $GateThick fields.values= { Phosphorus= 1.0e20 }
+(sdedr:define-gaussian-profile "Gauss.SourceDrainExt"
+  "ArsenicActiveConcentration" "PeakPos" 0.0 "PeakVal" @LDD_Peak@
+  "ValueAtDepth" 4e17 "Depth" @LDD_Depth@ "Gauss" "Factor" @LDD_Factor@)
 
-##------Poly etching----------------
-photo mask=GATE thickness=0.1
-etch material= {Poly}  type= anisotropic rate= { $GateThick } time=1.1
-etch material= {Oxide}  type= anisotropic rate= { $Tox } time=1.0
-strip photoresist
+(sdedr:define-analytical-profile-placement "PlaceAP.DrainExt"
+  "Gauss.SourceDrainExt" "BaseLine.DrainExt" "Negative" "NoReplace" "Eval")
 
-## ---------- reoxidation -----------------------------------------
-deposit material= {Oxide} type= isotropic  rate= { $PolyReox } time= 1.0
+(sdedr:define-analytical-profile-placement "PlaceAP.SourceHALO"
+  "Gauss.SourceDrainHALO" "BaseLine.SourceHALO" "Both" "NoReplace" "Eval")
 
-## ---------- PolyReox spacer etching --------------------------------
-etch material= {Oxide} type= anisotropic rate= { $PolyReox } time= 1.1
+(sdedr:define-gaussian-profile "Gauss.SourceDrainHALO"
+  "BoronActiveConcentration" "PeakPos" @Halo_Pos@ "PeakVal" @Halo_Peak@
+  "ValueAtDepth" 4e17 "Depth" @Halo_Depth@ "Gauss" "Factor" @Halo_Factor@)
 
-# ------------------------------------
-#split @HaloLDD@
-# ------------------------------------
+(sdedr:define-analytical-profile-placement "PlaceAP.DrainHALO"
+  "Gauss.SourceDrainHALO" "BaseLine.DrainHALO" "Both" "NoReplace" "Eval")
+##--------------------------------------------------------------------------
+; Defining contacts 
 
-# --- refinebox for halo implants ----------------------- #
-	refinebox name= Ref_LDD Silicon add  \
-	min= "0.0 $Ymin" max="0.5 $LSCT+$LCT+$LSP2C+0.2"  \
-	xrefine= "0.01 0.1 " \
-	yrefine= "0.05 0.03"
- 
-	grid remesh
-	
-##------LDD imp[lant screen ox------
-deposit material= {Oxide} type= anisotropic   rate= { 0.002 } time= 1.0
+(sdegeo:set-contact (find-edge-id (position 0.0 (+ Ymin (* Lsd 0.5)) 0.0)) "source")
+(sdegeo:set-contact (find-edge-id (position 0.0 (- Ymax (* Lsd 0.5)) 0.0)) "drain")
+(sdegeo:set-contact (find-edge-id (position Xpoly 0.0 0.0)) "gate")
+(sdegeo:set-contact (find-edge-id (position 0.2 0.0 0.0)) "substrate")
 
-mask name= PBD left= $Ymin right= $LPBD 
-photo mask= PBD thickness= 1.0
-struct tdr=n@node@_LDD FullD
+;-------------------------------------------------------------------------------
+;-- Specify mesh refinements ---------------------------------------------------
+;-------------------------------------------------------------------------------
 
+; Defining regional refinements
+;-- epi layer                                         
+(sdedr:define-refinement-size "RefDef.Sub" 0.01 0.01 0.01 0.02)                 
+(sdedr:define-refinement-function "RefDef.Sub" 
+  "DopingConcentration" "MaxTransDiff" 1) 
+(sdedr:define-refinement-region "PlaceRF.Sub" "RefDef.Sub" "R.Sub")
+(sdedr:define-refinement-function "RefDef.Sub" "MaxLenInt" "R.Sub" 
+  "R.Gateox" 0.0002 1.3 "DoubleSide" "UseRegionNames")
+;--SD region
+(sdedr:define-refeval-window "RefWin.d" 
+  "Rectangle" (position 0.0 (- Ygr 0.03) 0.0) (position 0.1 Ymax 0.0))
+(sdedr:define-refinement-size "RefDef.d" 0.005 0.005 0.0025 0.0025)
+(sdedr:define-refinement-placement "PlaceRF.d" "RefDef.d" 
+  "RefWin.d") 
+                                                                                   
+(sdedr:define-refeval-window "RefWin.s" 
+  "Rectangle" (position 0.0 (+ Ygl 0.03) 0.0) (position 0.1 Ymin 0.0))     
+(sdedr:define-refinement-size "RefDef.s" 0.005 0.005 0.0025 0.0025)                         
+(sdedr:define-refinement-placement "PlaceRF.s" "RefDef.s" 
+  "RefWin.s")                                                                   
+                                                                                              
+;-- channel
+(sdedr:define-refeval-window "RefWin.channel"                   
+  "Rectangle" (position 0.0 (- Yspl 0.01) 0.0) (position 0.1 (+ Yspr 0.01) 0.0))          
+(sdedr:define-refinement-size "RefDef.channel" 0.002 0.002 0.001 0.001)     
+(sdedr:define-refinement-placement "PlaceRF.channel" "RefDef.channel" 
+  "RefWin.channel") 
+#;---concact
+#(sdedr:define-refeval-window "RefWin.ctr" 
+#  "Rectangle" (position 0.01 Yspr 0.0) (position -0.002 Ymax 0.0))
+#(sdedr:define-refinement-size "RefDef.ctr" 0.004 0.004 0.002 0.002)
+#(sdedr:define-refinement-placement "PlaceRF.ctr" "RefDef.ctr" "RefWin.ctr") 
+#
+#(sdedr:define-refeval-window "RefWin.ctl" 
+#  "Rectangle" (position 0.01 Yspl 0.0) (position -0.002 Ymin 0.0))
+#(sdedr:define-refinement-size "RefDef.ctl" 0.004 0.004 0.002 0.002)
+#(sdedr:define-refinement-placement "PlaceRF.ctl" "RefDef.ctl" "RefWin.ctl") 
 
-implant Phosphorus dose= 1.0e13 energy= 30 tilt= 7.0 rotation= 0 mult.rot= 4 
+; Meshing the device structure
+(sde:build-mesh "n@node@")
 
-strip photoresist
-
-diffuse temperature= 900 time=5.0
-
-##--------Offset nitride deposition---------------------
-deposit material= {Nitride} type= isotropic   rate= { $Lsp1 } time= 1.0
-etch    material= {Nitride} type= anisotropic rate= { $Lsp1 } time= 1.1
-
-#split @Spacer@
-# -------------------------------------------------------------------- #
-## ---------- side wall spacer -----------------------------------
-
-deposit material= {Nitride} type= isotropic rate= {1.0} time= $Lsp2
-etch material= {Nitride} type= anisotropic rate= 1.2*$Lsp2 time= 1.0
-
-#split @SD@
-
-	refinebox name= Ref_S Silicon add  \
-	min= "0.0 $Ymin" max="0.1 $LSCT+$LCT+$LSP2C"  \
-	xrefine= "0.01 0.03 " \
-	yrefine= "0.05" 
-
-	refinebox name= Ref_D Silicon add  \
-	min= "0.0 $Ymax-$LSCT-$LCT-$LSP2C" max="0.1 $Ymax"  \
-	xrefine= "0.01 0.03 " \
-	yrefine= "0.05" 	
-	
-	grid remesh
-
-mask name= SD segments= { $Ymin $LSCT+$LCT+$LSP2C $Ymax-$LSCT-$LCT-$LSP2C $Ymax} 
-photo mask= SD thickness= 1.0
-struct tdr=n@node@_SDPR FullD
-# --- source/drain-implantation ---
-
-implant Arsenic dose= 2.5e15 energy= 6.0 tilt= 0.0 rotation= 0
-
-
-strip photoresist
-
-## -------Spike+laser annealing-----------------
-temp_ramp name= spike time= 0.025  temp= 600  ramprate= 300.0
-temp_ramp name= spike time= 0.0083 temp= 1050 ramprate= 0.0
-temp_ramp name= spike time= 0.05   temp= 1050 ramprate= -150.0
-diffuse temp_ramp= spike
-
-#split @Silicide@
-
-##--------ILD deposition------------------------------
-
-etch material= {Oxide} type= anisotropic thickness= 0.025
+-----------------------------------------------------------------------------------------
 
 
-#split @Mesh@
-# Contacts
-
-contact name= "gate"     point PolySilicon     x= -0.2 y= $LSCT+$LCT+$LSP2C+$LPC*0.5  replace
-contact name= "source"   box   Silicon  xlo= -0.01 xhi= 0.01 ylo= $Ymin yhi= $LSCT+$LCT+$LSP2C-0.5   add
-contact name= "drain"    box   Silicon  xlo= -0.01 xhi= 0.01 ylo= $Ymax-$LSCT-$LCT-$LSP2C-0.5 yhi= $Ymax   add
-contact name= Substrate bottom
-
-struct tdr= n@node@ !Gas
-
-exit
-
-----------------------------------------------------------------------
-Electrode {
-	{ Name= "drain"     Voltage= 0.0  }
-	{ Name= "gate"      Voltage= 0.0  }
-	{ Name= "source"    Voltage= 0.0  }
-	{ Name= "Substrate" Voltage= 0.0}
-}
-
+#define _Vdd_    @Vdd@	
+#define _VdLin_  @Vdlin@
+#define _VdSat_  @Vdd@
 
 
 File {
-	Grid=       "@tdr@"
-	Parameters= "@parameter@" 
-	Output=     "@log@"
-	Current=    "@plot@"
-	Plot=       "@tdrdat@"
-	Piezo     = "@tdr@"
-}
-
-
-Physics {
-        Fermi
-}
-
-Physics (Material= "Silicon") {
-
-	Mobility(
-		HighFieldSaturation 
-		Enormal (IALMob(AutoOrientation))
-	)
-	EffectiveIntrinsicDensity(OldSlotboom)
-	Recombination(
-		SRH(DopingDependence ) 
-		Auger
-		Avalanche(Okuto)
-	)
-	
-}
-	
-
-Plot {
-	eDensity hDensity
-	TotalCurrent/Vector eCurrent/Vector hCurrent/Vector
-	eMobility hMobility
-	eVelocity hVelocity
-	eQuasiFermi hQuasiFermi
-	eTemperature hTemperature Temperature 
-	ElectricField/Vector Potential SpaceCharge
-	Doping DonorConcentration AcceptorConcentration
-	SRH Band2Band 
-	AvalancheGeneration eAvalancheGeneration hAvalancheGeneration
-	eGradQuasiFermi/Vector hGradQuasiFermi/Vector
-	eEparallel hEparallel eENormal hENormal
-	BandGap 
-	BandGapNarrowing
-	Affinity
-	ConductionBand ValenceBand
-	eBarrierTunneling hBarrierTunneling * BarrierTunneling
-	eTrappedCharge  hTrappedCharge
-	eGapStatesRecombination hGapStatesRecombination
-	eDirectTunnel hDirectTunnel
-	
-	*--Stress related data
-	StressXX StressYY StressZZ StressXY StressXZ StressYZ
-	eMobilityStressFactorXX eMobilityStressFactorYY eMobilityStressFactorZZ
-	eMobilityStressFactorXY eMobilityStressFactorXZ eMobilityStressFactorXY
-	
-}
-
-Math { 
-	Digits=6
-	Extrapolate
-	Notdamped= 100
-	Iterations= 25
-	ExitOnFailure
-	ErrRef(Electron)=  1e8
-	ErrRef(Hole)    =  1e8
-	-CheckUndefinedModels
-	
-	*CNormPrint
-	RefDens_eGradQuasiFermi_EparallelToInterface= 1e12
-	RefDens_hGradQuasiFermi_EparallelToInterface= 1e12
-}
-
-Solve {
-*- Creating initial guess:
-	Coupled(Iterations= 100 LineSearchDamping= 1e-4){ Poisson } 
-	Coupled { Poisson Electron Hole }
-	
-	Quasistationary (
-		BreakCriteria { Current(contact="drain" AbsVal= 1e-9) }		
-		
-		Initialstep= 2.5e-4 Increment= 1.35
-		Minstep= 1.e-6 MaxStep= 0.05 
-		Goal { Name= "drain" Voltage= 1000.0 }
-	){ Coupled { Poisson Electron Hole }
-	}
-	
-}
--------------------------------------------------------------------
-set N     @node@
-#----------------------------------------------------------------------#
-load_library extract
-lib::SetInfoDef 1
-#----------------------------------------------------------------------#
-
-
-echo "##############################"
-echo "plotting Id-Vd(BV) curves"
-echo "##############################"
-
-load_file @plot@ -name PLT($N)
-
-if {[lsearch [list_plots] Plot_IdVd] == -1} {
-	create_plot -1d -name Plot_IdVd
-	set_plot_prop -title "I<sub>d</sub>-V<sub>ds</sub> Curve" -title_font_size 20
-	set_axis_prop -axis x -title {Drain Voltage [V]} \
-		-title_font_size 16 -scale_font_size 14 -type linear 
-	set_axis_prop -axis y -title {Drain Current [A]} \
-		-title_font_size 16 -scale_font_size 14 -type log
-	set_legend_prop -label_font_size 12 -location top_left -label_font_att bold	
-}
-select_plots Plot_IdVd
-
-set Vds [get_variable_data "drain InnerVoltage" -dataset PLT($N)]
-set Ids [get_variable_data "drain TotalCurrent" -dataset PLT($N)]
-ext::AbsList -out absIds -x $Ids ;# Compute absolute value of drain currents
-create_variable -name absId -dataset PLT($N) -values $absIds
-
-create_curve -name BV($N) -dataset PLT($N) \
-	-axisX "drain InnerVoltage" -axisY "absId"
-	
-set_curve_prop BV($N) -label "IdVd (BV extraction)" \
-	-color red -line_style solid -line_width 3
-
-#-- Extraction
-set Io 1e-9
-
-ext::ExtractBVi -out BVdss -name out -v $Vds -i $Ids -io $Io
-
-===============================================
-#define ParFileDir .
-
-Material="Silicon" {
-
-  #includeext "ParFileDir/Siliconc110.par"	
-
-	OkutoCrowell * Impact Ionization:
-	{ * G_impact = alpha_n n v_drift_n  +  alpha_p p v_drift_p
-	  * with alpha = a (1+c(T-300)) E^gamma exp[-(b (1+d(T-300)) /E )^delta]
-		a	= @<0.013*0.426>@ ,	@<0.013*0.243>@	# [1/cm]
-		b	= 4.8100e+05 ,	6.5300e+05	# [V/cm]
-		c	= 3.0500e-04 ,	5.3500e-04	# [1/K]
-		d	= 6.8600e-04 ,	5.6700e-04	# [1/K]
-		gamma	= 1 ,	1	# [1]
-		delta	= 2 ,	2	# [1]
-	}  
+  Grid      = "@tdr@"
+  
+  Parameter = "@parameter@"
+  Plot      = "@tdrdat@"
+  Current   = "@plot@"
+  Output    = "@log@"
   
 }
 
+Electrode {
+  { Name="source"    Voltage=0.0 }
+  { Name="drain"     Voltage=0.0 }
+  { Name="gate"      Voltage=0.0 barrier= 0.15}
+  { Name="substrate" Voltage=0.0 }
+}
+
+Physics { 
+         Fermi
+         Hydrodynamic(eTemperature)   
+         AreaFactor= @Gate_Width@
+}
+
+Physics (Material= Silicon) {
+	                         
+	Mobility (
+	  Enormal (IALMob(AutoOrientation)) 
+	  HighFieldSaturation
+	)
+     Recombination(SRH Auger Band2Band Avalanche)
+#      Recombination(SRH )
+      EffectiveIntrinsicDensity(OldSlotboom)
+
+    Piezo(
+    Model(
+      Mobility(
+         eSubBand(Doping) 
+         hSixBand(Doping)
+              )
+         )
+         )	                                
+}      
+      
+
+Plot{
+  eDensity hDensity
+  TotalCurrent/Vector eCurrent/Vector hCurrent/Vector
+  eMobility hMobility                        
+  eVelocity hVelocity
+  eQuasiFermi hQuasiFermi
+  eTemperature Temperature * hTemperature
+  ElectricField/Vector Potential SpaceCharge
+  Doping DonorConcentration AcceptorConcentration
+  SRH Band2Band Auger
+  AvalancheGeneration eAvalancheGeneration hAvalancheGeneration
+  eGradQuasiFermi/Vector hGradQuasiFermi/Vector
+  eEparallel hEparallel eENormal hENormal
+  BandGap 
+  BandGapNarrowing
+  Affinity
+  ConductionBand ValenceBand
+  eBarrierTunneling hBarrierTunneling * BarrierTunneling
+  eTrappedCharge  hTrappedCharge                                  
+  eGapStatesRecombination hGapStatesRecombination
+  StressXX StressYY StressZZ StressXY StressXZ StressYZ
+  eMobilityStressFactorXX eMobilityStressFactorYY eMobilityStressFactorZZ
+  eMobilityStressFactorXY eMobilityStressFactorXZ eMobilityStressFactorXY
+  hMobilityStressFactorXX hMobilityStressFactorYY hMobilityStressFactorZZ
+  hMobilityStressFactorYZ hMobilityStressFactorXZ hMobilityStressFactorXY
+  
+}
+
+Math {
+  Extrapolate
+  Derivatives
+  RelErrControl
+  Digits=6
+  RHSmin=1e-10
+  Notdamped=100
+  Iterations=50
+  DirectCurrent
+  ExitOnFailure
+  TensorGridAniso
+  StressMobilityDependence= TensorFactor 
+  * Please uncomment if you have 8 CPUs or more
+  NumberOfThreads= 8
+  
+}
+
+Solve {
+  Coupled ( Iterations=100 LineSearchDamping=1e-8 ){ Poisson  }
+  Coupled { Poisson Electron Hole eTemperature }
+  
+  #-- Ramp drain to VdLin
+  Quasistationary( 
+    InitialStep=1e-2 Increment=1.5 
+    MinStep=1e-6 MaxStep=0.1 
+    Goal { Name="drain" Voltage=_VdLin_ } 
+  ){ Coupled { Poisson Electron Hole eTemperature } }
+  Save ( FilePrefix="n@node@_VdLin" )
+
+  #-- Ramp drain to VdSat
+  Quasistationary( 
+    InitialStep=1e-2 Increment=1.5 
+    MinStep=1e-6 MaxStep=0.1 
+    Goal { Name="drain" Voltage=_VdSat_ } 
+  ){ Coupled { Poisson Electron Hole eTemperature } }
+  Save ( FilePrefix="n@node@_VdSat" )
+
+  #-- Vg sweep for Vd=VdLin
+  NewCurrentPrefix="IdVg_VdLin_" 
+  Load ( FilePrefix = "n@node@_VdLin" )
+  Quasistationary( 
+    DoZero 
+    InitialStep=1e-2 Increment=1.35 
+    MinStep=1e-8 MaxStep=0.05 
+    Goal { Name="gate" Voltage=_Vdd_ } 
+  ){ Coupled { Poisson Electron Hole eTemperature } }
+
+  #-- Vg sweep for Vd=VdSat
+  NewCurrentPrefix="IdVg_VdSat_" 
+  Load ( FilePrefix="n@node@_VdSat" )
+  Quasistationary( 
+    DoZero 
+    InitialStep=1e-2 Increment=1.35 
+    MinStep=1e-8 MaxStep=0.05 
+    Goal { Name="gate" Voltage=_Vdd_ } 
+  ){ Coupled { Poisson Electron Hole eTemperature } }
+}
+----------------------------------------------------------------------
+## Define SWB variables
+
+#----------------------------------------------------------------------#
+
+set N     @node@
+set i     @node:index@
+set Lg    @Gate_Len@
+set Vd    @Vdd@
+
+set Type nMOS
+set Weff @Gate_Width@
+
+set ID "$Type"
+set N   ${Type}_${N}
+
+#- Automatic alternating color assignment tied to node index
+#----------------------------------------------------------------------#
+set COLORS  [list green blue red orange magenta violet brown]
+set NCOLORS [llength $COLORS]
+set color   [lindex  $COLORS [expr $i%$NCOLORS]]
+
+#- Plotting IdVg
+#----------------------------------------------------------------------#
+echo "#########################################"
+echo "Plotting Id-Vg (lin) curve"
+echo "#########################################"
+load_file IdVg_VdLin_@plot@ -name PLT_Lin($N)
+
+if {[lsearch [list_plots] Plot_IdVg] == -1} {
+	create_plot -1d -name Plot_IdVg
+}
+select_plots Plot_IdVg
+
+set Vgs [get_variable_data "gate OuterVoltage" -dataset PLT_Lin($N)]
+set Ids [get_variable_data "drain TotalCurrent" -dataset PLT_Lin($N)]
+ext::AbsList out= absIds x= $Ids ;# Compute absolute value of drain currents
+create_variable -name absId -dataset PLT_Lin($N) -values $absIds
+
+create_curve -name IdVgLin($N) -dataset PLT_Lin($N) \
+	-axisX "gate OuterVoltage" -axisY "absId"
+	
+set_curve_prop IdVgLin($N) -label "IdVgLin" \
+	-color $color -line_style solid -line_width 3 
+
+
+#----------------------------------------------------------------------#
+echo "#########################################"
+echo "Extracting parameters from Id-Vg (lin) curve"
+echo "#########################################"
+
+#- Defining current level for Vti extraction
+#----------------------------------------------------------------------#
+set Io    [expr 1.0e-7*$Weff/$Lg] 
+if { $Type == "nMOS" } { set SIGN 1.0 } else { set SIGN -1.0 }
+
+create_variable -name IdScLin -dataset PLT_Lin($N) -function "$SIGN/$Weff*<drain TotalCurrent:PLT_Lin($N)>"
+set IdsScLin [get_variable_data "IdScLin" -dataset PLT_Lin($N)]
+
+ext::ExtractVti      -out VtiLin -name "VtiLin_V" -v $Vgs -i $absIds   -io $Io 
+ext::ExtractExtremum -out IdLin  -name "IdLin_A"  -x $Vgs -y $absIds -type "max"
+
+#puts "DOE: IdLin_uA_um [format %.1f [expr ($IdLin/$Weff)*1.0e6]]"
+
+echo "#########################################"
+echo "Plotting Id-Vg (sat) curve"
+echo "#########################################"
+load_file IdVg_VdSat_@plot@ -name PLT_Sat($N)
+
+if {[lsearch [list_plots] Plot_IdVg] == -1} {
+	create_plot -1d -name Plot_IdVg
+}
+select_plots Plot_IdVg
+
+set Vgs [get_variable_data "gate OuterVoltage" -dataset PLT_Sat($N)]
+set Ids [get_variable_data "drain TotalCurrent" -dataset PLT_Sat($N)]
+ext::AbsList out= absIds x= $Ids ;# Compute absolute value of drain currents
+create_variable -name absId -dataset PLT_Sat($N) -values $absIds
+
+
+create_curve -name IdVgSat($N) -dataset PLT_Sat($N) \
+	-axisX "gate OuterVoltage" -axisY "absId"
+	
+set_curve_prop IdVgSat($N) -label "IdVgSat" \
+	-color $color -line_style dash -line_width 3 
+
+
+## Axis	 Specification
+set_plot_prop -title "I<sub>d</sub>-V<sub>gs</sub> Curve" -title_font_size 16 -show_legend
+set_axis_prop -axis x -title {Gate Voltage [V]} \
+	-title_font_size 16 -scale_font_size 14 -type linear 
+set_axis_prop -axis y -title {Drain Current [A]} \
+	-title_font_size 16 -scale_font_size 14 -type linear
+set_legend_prop -label_font_size 12 -location bottom_right -label_font_att bold
+
+
+#----------------------------------------------------------------------#
+echo "#########################################"
+echo "Extracting parameters from Id-Vg (sat) curve"
+echo "#########################################"
+
+#- Defining current level for Vti extraction
+#----------------------------------------------------------------------#
+set Io    [expr 1.0e-7*$Weff/$Lg] 
+if { $Type == "nMOS" } { set SIGN 1.0 } else { set SIGN -1.0 }
+
+create_variable -name IdScSat -dataset PLT_Sat($N) -function "$SIGN/$Weff*<drain TotalCurrent:PLT_Sat($N)>"
+set IdsScSat [get_variable_data "IdScSat" -dataset PLT_Sat($N)]
+ 
+ext::ExtractVti      -out VtiSat -name "VtiSat_V" -v $Vgs -i $absIds   -io $Io 
+ext::ExtractExtremum -out IdSat  -name "IdSat_A"  -x $Vgs -y $absIds -type "max"
+ext::ExtractValue -out Ioff -name "Ioff_A" -x $Vgs -y $absIds -yLog 1 -xo 0
+
+#puts "DOE: IdSat_uA_um [format %.1f  [expr ($IdSat/$Weff)*1.0e6]]"
+#puts "DOE: Ioff_A_m [format %.2e [expr ($Ioff/$Weff)]] "
+
+===================================================
+#define ParFileDir .
+
+Material="Silicon" {
+  #includeext "ParFileDir/Siliconc110.par"
+}
