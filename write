@@ -1,0 +1,1047 @@
+File {
+  Grid      = "n@node|sprocessN@_fps.tdr"
+  Parameter = "pp@node@_des.par"
+  Plot      = "@tdrdat@"
+  Current   = "@plot@"
+  Output    = "@log@"
+  Piezo     = "@tdr@"
+}
+
+	File {
+		Grid=      "n@node|sprocessN@_fps.tdr"
+		Parameter= "pp@node|IdVg_PD@_des.par"
+		Plot=      "@tdrdat@"
+		Current=   "@plot@"
+		Piezo     = "n@node|sprocessN@_fps.tdr"
+	}
+================================================
+#define _Vdd_Supply_ 0.8
+
+Device AMOS {
+	Electrode {
+	  { Name="source"    Voltage= 0.0 DistResist= SchottkyResist }
+	  { Name="drain"     Voltage= 0.0 DistResist= SchottkyResist }
+	  { Name="gate"      Voltage= 0.0 Workfunction= 4.19}
+	  { Name="substrate" Voltage= 0.0 }
+	}
+	File {
+		Grid=      "n@node|sprocessN@_fps.tdr"
+		Parameter= "pp@node|IdVg_PD@_des.par"
+		Plot=      "@tdrdat@"
+		Current=   "@plot@"
+		Piezo     = "n@node|sprocessN@_fps.tdr"
+	}
+	Physics {
+	  Fermi
+	  AreaFactor= @<0.855*0.095>@
+	}
+	
+	
+	Physics ( Material= "Silicon" ) {   
+	  eQuantumPotential(AutoOrientation density)
+	  Mobility(
+		HighFieldSaturation
+		Enormal (
+		 IALMob(AutoOrientation)
+		 RPS                                    # Used for remote phonon scattering (RPS)
+		 NegInterfaceCharge (SurfaceName="s1")  # Used for remote Coulomb scattering (RCS) and remote dipole scattering (RDS)
+		 PosInterfaceCharge (SurfaceName="s1")  # Used for RCS and RDS
+				)
+			  )
+	  EffectiveIntrinsicDensity(OldSlotboom)
+	
+	  Recombination( Auger SRH( DopingDep ) Band2Band(Model= NonLocalPath) Avalanche(Okuto) )
+	  eMultivalley(MLDA kpDOS -density)
+	  hMultivalley(MLDA kpDOS -density)
+	   
+	  Piezo (
+		 Model (
+		Mobility (
+			saturationfactor=0.2
+			eSubband(Fermi  EffectiveMass Scattering(MLDA) -RelChDir110)
+			hSubband(Doping EffectiveMass Scattering(MLDA) -RelChDir110)
+			
+			)
+		DOS(eMass hMass)
+		DeformationPotential(Minimum ekp hkp)
+		)
+		  )
+	}
+}
+
+Device NMOS {
+	Electrode {
+	  { Name="source"    Voltage= 0.0 DistResist= SchottkyResist }
+	  { Name="drain"     Voltage= 0.0 DistResist= SchottkyResist }
+	  { Name="gate"      Voltage= 0.0 Workfunction= 4.155}
+	  { Name="substrate" Voltage= 0.0 }
+	}
+	File {
+		Grid=      "n@node|sprocessN@_fps.tdr"
+		Parameter= "pp@node|IdVg_PG@_des.par"
+		Plot=      "@tdrdat@"
+		Current=   "@plot@"
+		Piezo     = "n@node|sprocessN@_fps.tdr"
+	}
+	Physics {
+	  Fermi
+	  AreaFactor= @<0.855*0.065>@
+	}
+	
+	
+	Physics ( Material= "Silicon" ) {   
+	  eQuantumPotential(AutoOrientation density)
+	  Mobility(
+		HighFieldSaturation
+		Enormal (
+		 IALMob(AutoOrientation)
+		 RPS                                    # Used for remote phonon scattering (RPS)
+		 NegInterfaceCharge (SurfaceName="s1")  # Used for remote Coulomb scattering (RCS) and remote dipole scattering (RDS)
+		 PosInterfaceCharge (SurfaceName="s1")  # Used for RCS and RDS
+				)
+			  )
+	  EffectiveIntrinsicDensity(OldSlotboom)
+	  
+	  Recombination( Auger SRH( DopingDep ) Band2Band(Model= NonLocalPath) Avalanche(Okuto) )
+	  eMultivalley(MLDA kpDOS -density)
+	  hMultivalley(MLDA kpDOS -density)
+	   
+	  Piezo (
+		 Model (
+		Mobility (
+			saturationfactor=0.2
+			eSubband(Fermi  EffectiveMass Scattering(MLDA) -RelChDir110)
+			hSubband(Doping EffectiveMass Scattering(MLDA) -RelChDir110)
+			
+			)
+		DOS(eMass hMass)
+		DeformationPotential(Minimum ekp hkp)
+		)
+		  )
+	}
+}
+
+Device PMOS {
+	Electrode {
+	  { Name="source"    Voltage= 0.0  }
+	  { Name="drain"     Voltage= 0.0  }
+	  { Name="gate"      Voltage= 0.0 Workfunction= 4.705}
+	  { Name="substrate" Voltage= 0.0 }
+	}
+	File {
+		Grid=      "n@node|sprocessP@_fps.tdr"
+		Parameter= "pp@node|IdVg_PU@_des.par"
+		Plot=      "@tdrdat@"
+		Current=   "@plot@"
+		Piezo     = "n@node|sprocessP@_fps.tdr"
+	}
+	Physics {
+	  Fermi
+	  AreaFactor= @<0.855*0.04>@
+	}
+	
+	
+	Physics ( Material= "SiliconGermanium" ) {
+	   
+	  hQuantumPotential(AutoOrientation density) 
+	  MLDA 
+	  Mobility(
+		HighFieldSaturation
+		Enormal (
+		 IALMob(AutoOrientation PhononCombination=2)
+		 RPS                                    # Used for remote phonon scattering (RPS)
+		 NegInterfaceCharge (SurfaceName="s1")  # Used for remote Coulomb scattering (RCS) and remote dipole scattering (RDS)
+		 PosInterfaceCharge (SurfaceName="s1")  # Used for RCS and RDS
+				)
+			  )
+	  EffectiveIntrinsicDensity(OldSlotboom)
+
+	  Recombination( Auger SRH( DopingDep ) Band2Band(Model= NonLocalPath) Avalanche(Okuto) )
+	  eMultivalley(MLDA kpDOS parfile -density)
+	  hMultivalley(MLDA kpDOS -density)
+	   
+	  Piezo (
+		 Model (
+		Mobility (
+			saturationfactor=0.2		 
+		   hSubband(Doping EffectiveMass Scattering(MLDA) -RelChDir110)
+	
+			)
+		DOS(eMass hMass)
+		DeformationPotential(Minimum ekp hkp)
+		)
+		  )
+	}
+
+}
+
+File{
+	Output= "@log@"
+}
+
+Plot{
+  eDensity hDensity
+  TotalCurrent/Vector eCurrent/Vector hCurrent/Vector
+  eMobility hMobility
+  eVelocity hVelocity
+  eQuasiFermi hQuasiFermi
+  eTemperature Temperature * hTemperature
+  ElectricField/Vector Potential SpaceCharge
+  Doping DonorConcentration AcceptorConcentration
+  SRH Band2Band * Auger
+  AvalancheGeneration eAvalancheGeneration hAvalancheGeneration
+  eGradQuasiFermi/Vector hGradQuasiFermi/Vector
+  eEparallel hEparallel eENormal hENormal
+  BandGap 
+  BandGapNarrowing
+  Affinity
+  ConductionBand ValenceBand
+  eQuantumPotential hQuantumPotential
+  eBarrierTunneling hBarrierTunneling * BarrierTunneling
+  eTrappedCharge  hTrappedCharge
+}
+
+Math {
+  Extrapolate
+  RelErrControl
+  Digits= 5
+  RHSmin= 1e-10
+  Notdamped= 50
+  Iterations= 20
+  ExitOnFailure
+  eDrForceRefDens= 1e12
+  hDrForceRefDens= 1e12
+  TensorGridAniso
+  StressMobilityDependence= TensorFactor
+#  StressLimit= 4e9  #[Pa]
+
+  Method= ILS
+  Number_Of_Threads= 8
+  -CheckUndefinedModels	  	  
+  
+  Surface "s1" (
+  MaterialInterface= "HfO2/Oxide" 
+  )
+
+  NonLocalPath (
+  	  Postprocessing
+  	  Derivative= 0                     # compute derivatives
+  	  Strategy=1						# use strategy 1
+  	  N=5 								# collect edges from last 5 iterations
+  	  MinStep=1.0e-5					# define lower boundary
+  	  MaxStep=1.0e-2					# define upper boundary
+  )  
+}
+
+System{
+	Vsource_pset  Vdl (DL 0)  { dc= 0.0 }
+	Vsource_pset  Vdr (DR 0)  { dc= 0.0 }
+	Vsource_pset  Vgl (GL 0)  { dc= 0.0 }
+	Vsource_pset  Vgr (GR 0)  { dc= 0.0 }
+	Vsource_pset  Vwd (WD 0)  { dc= 0.0 }
+	Vsource_pset  Vbl (BL 0)  { dc= 0.0 }
+	Vsource_pset  Vbr (BR 0)  { dc= 0.0 }
+	Vsource_pset  Vpl (PL 0)  { dc= 0.0 }
+	Vsource_pset  Vpr (PR 0)  { dc= 0.0 }
+	Resistor_pset Rpl (PL OL) { resistance= 1e12 }
+	Resistor_pset Rpr (PR OR) { resistance= 1e12 }
+	AMOS  amosL ( "source"=BL "drain"=OL "gate"=WD "substrate"=0)
+	AMOS  amosR ( "source"=BR "drain"=OR "gate"=WD "substrate"=0)
+	PMOS  pmosL ( "source"=DL "drain"=OL "gate"=OR "substrate"=DL)
+	NMOS  nmosL ( "source"=GL "drain"=OL "gate"=OR "substrate"=0)
+	PMOS  pmosR ( "source"=DR "drain"=OR "gate"=OL "substrate"=DR)
+	NMOS  nmosR ( "source"=GR "drain"=OR "gate"=OL "substrate"=0)
+	Plot "n@node@_sys_des.plt"
+	(time() v(DR) v(DL) v(WD) v(BR) v(BL) v(OL) v(OR) v(PL) v(PR) v(GR) v(GL)
+	        i(Rpl,OL) i(Rpr,OR)
+	        i(pmosR,DR) i(amosR,BR) i(nmosR,GR)
+	        i(pmosL,DL) i(amosL,BL) i(nmosL,GL))
+}
+
+Solve{
+	Set (Rpl."resistance"= 1.0)
+	Set (Rpr."resistance"= 1e12)
+	NewCurrentPrefix="bootL_"
+	Coupled(Iterations= 100 LineSearchDamping= 0.01){ Poisson }
+	Quasistationary( 
+		InitialStep= 1e-3 Increment= 1.35 
+		MinStep= 1e-5 MaxStep= 0.1 
+		Goal{ Parameter= Vdl.dc Voltage= _Vdd_Supply_ }
+		Goal{ Parameter= Vdr.dc Voltage= _Vdd_Supply_ }
+		Goal{ Parameter= Vbl.dc Voltage= _Vdd_Supply_ }
+		Goal{ Parameter= Vbr.dc Voltage= _Vdd_Supply_ }
+		Goal{ Parameter= Vpl.dc Voltage= _Vdd_Supply_ }
+		Goal{ Parameter= Vpr.dc Voltage= _Vdd_Supply_ }
+	){ Coupled{ Poisson Electron Hole Contact Circuit } }
+
+	Save ( FilePrefix="n@node@_boot" )
+# READ
+	NewCurrentPrefix="bootL_READ_"
+	Quasistationary(
+		InitialStep= 1e-3 Increment= 1.35 
+		MinStep= 1e-6 MaxStep= 0.1
+		Goal{ Parameter= Vwd.dc    Voltage= @WL@ }
+	){ Coupled{ Poisson Electron Hole Contact Circuit } }
+
+	Save ( FilePrefix="n@node@_flipL" )
+	
+	Load ( FilePrefix="n@node@_flipL" )
+# Left inverter voltage transfer characteristic (VTC)
+	NewCurrentPrefix="flipL_"
+	Quasistationary( 
+		InitialStep= 1e-3 Increment= 1.35 
+		MinStep= 1e-6 MaxStep= 0.025
+		Goal{ Parameter= Vpl.dc  Voltage=  0.0 }
+	){ ACCoupled (
+		StartFrequency= 0 EndFrequency= 0
+		NumberOfPoints= 1 Decade
+		Node(OL OR)
+		ObservationNode(OR)
+		Exclude(Vpl Vpr)
+		ACExtract= "n@node@_sram"
+		* NoisePlot= "n@node@_noise"
+##		ACcompute(   Time = (
+##		Range = (0.00 0.30) intervals= 10;
+##		Range = (0.30 0.70) intervals= 40;
+##		Range = (0.70 1.00) intervals= 10) )
+	){ Poisson Electron Hole Contact Circuit }
+##		CurrentPlot( Time = (
+##		Range = (0.00 0.30) intervals= 10;
+##		Range = (0.30 0.70) intervals= 40;
+##		Range = (0.70 1.00) intervals= 10) )
+	}	
+	
+}
+
+
+=============================================
+#define _Vdd_Supply_ 0.8
+
+Device AMOS {
+	Electrode {
+	  { Name="source"    Voltage= 0.0 DistResist= SchottkyResist }
+	  { Name="drain"     Voltage= 0.0 DistResist= SchottkyResist }
+	  { Name="gate"      Voltage= 0.0 Workfunction= 4.19}
+	  { Name="substrate" Voltage= 0.0 }
+	}
+	File {
+		Grid=      "n@node|sprocessN@_fps.tdr"
+		Parameter= "pp@node|IdVg_PD@_des.par"
+		Plot=      "@tdrdat@"
+		Current=   "@plot@"
+		Piezo     = "n@node|sprocessN@_fps.tdr"
+	}
+	Physics {
+	  Fermi
+	  AreaFactor= @<0.855*0.095>@
+	}
+	
+	
+	Physics ( Material= "Silicon" ) {   
+	  eQuantumPotential(AutoOrientation density)
+	  Mobility(
+		HighFieldSaturation
+		Enormal (
+		 IALMob(AutoOrientation)
+		 RPS                                    # Used for remote phonon scattering (RPS)
+		 NegInterfaceCharge (SurfaceName="s1")  # Used for remote Coulomb scattering (RCS) and remote dipole scattering (RDS)
+		 PosInterfaceCharge (SurfaceName="s1")  # Used for RCS and RDS
+				)
+			  )
+	  EffectiveIntrinsicDensity(OldSlotboom)
+	
+	  Recombination( Auger SRH( DopingDep ) Band2Band(Model= NonLocalPath) Avalanche(Okuto) )
+	  eMultivalley(MLDA kpDOS -density)
+	  hMultivalley(MLDA kpDOS -density)
+	   
+	  Piezo (
+		 Model (
+		Mobility (
+			saturationfactor=0.2
+			eSubband(Fermi  EffectiveMass Scattering(MLDA) -RelChDir110)
+			hSubband(Doping EffectiveMass Scattering(MLDA) -RelChDir110)
+			
+			)
+		DOS(eMass hMass)
+		DeformationPotential(Minimum ekp hkp)
+		)
+		  )
+	}
+}
+
+Device NMOS {
+	Electrode {
+	  { Name="source"    Voltage= 0.0 DistResist= SchottkyResist }
+	  { Name="drain"     Voltage= 0.0 DistResist= SchottkyResist }
+	  { Name="gate"      Voltage= 0.0 Workfunction= 4.155}
+	  { Name="substrate" Voltage= 0.0 }
+	}
+	File {
+		Grid=      "n@node|sprocessN@_fps.tdr"
+		Parameter= "pp@node|IdVg_PG@_des.par"
+		Plot=      "@tdrdat@"
+		Current=   "@plot@"
+		Piezo     = "n@node|sprocessN@_fps.tdr"
+	}
+	Physics {
+	  Fermi
+	  AreaFactor= @<0.855*0.065>@
+	}
+	
+	
+	Physics ( Material= "Silicon" ) {   
+	  eQuantumPotential(AutoOrientation density)
+	  Mobility(
+		HighFieldSaturation
+		Enormal (
+		 IALMob(AutoOrientation)
+		 RPS                                    # Used for remote phonon scattering (RPS)
+		 NegInterfaceCharge (SurfaceName="s1")  # Used for remote Coulomb scattering (RCS) and remote dipole scattering (RDS)
+		 PosInterfaceCharge (SurfaceName="s1")  # Used for RCS and RDS
+				)
+			  )
+	  EffectiveIntrinsicDensity(OldSlotboom)
+	  
+	  Recombination( Auger SRH( DopingDep ) Band2Band(Model= NonLocalPath) Avalanche(Okuto) )
+	  eMultivalley(MLDA kpDOS -density)
+	  hMultivalley(MLDA kpDOS -density)
+	   
+	  Piezo (
+		 Model (
+		Mobility (
+			saturationfactor=0.2
+			eSubband(Fermi  EffectiveMass Scattering(MLDA) -RelChDir110)
+			hSubband(Doping EffectiveMass Scattering(MLDA) -RelChDir110)
+			
+			)
+		DOS(eMass hMass)
+		DeformationPotential(Minimum ekp hkp)
+		)
+		  )
+	}
+}
+
+Device PMOS {
+	Electrode {
+	  { Name="source"    Voltage= 0.0  }
+	  { Name="drain"     Voltage= 0.0  }
+	  { Name="gate"      Voltage= 0.0 Workfunction= 4.705}
+	  { Name="substrate" Voltage= 0.0 }
+	}
+	File {
+		Grid=      "n@node|sprocessP@_fps.tdr"
+		Parameter= "pp@node|IdVg_PU@_des.par"
+		Plot=      "@tdrdat@"
+		Current=   "@plot@"
+		Piezo     = "n@node|sprocessP@_fps.tdr"
+	}
+	Physics {
+	  Fermi
+	  AreaFactor= @<0.855*0.04>@
+	}
+	
+	
+	Physics ( Material= "SiliconGermanium" ) {
+	   
+	  hQuantumPotential(AutoOrientation density) 
+	  MLDA 
+	  Mobility(
+		HighFieldSaturation
+		Enormal (
+		 IALMob(AutoOrientation PhononCombination=2)
+		 RPS                                    # Used for remote phonon scattering (RPS)
+		 NegInterfaceCharge (SurfaceName="s1")  # Used for remote Coulomb scattering (RCS) and remote dipole scattering (RDS)
+		 PosInterfaceCharge (SurfaceName="s1")  # Used for RCS and RDS
+				)
+			  )
+	  EffectiveIntrinsicDensity(OldSlotboom)
+
+	  Recombination( Auger SRH( DopingDep ) Band2Band(Model= NonLocalPath) Avalanche(Okuto) )
+	  eMultivalley(MLDA kpDOS parfile -density)
+	  hMultivalley(MLDA kpDOS -density)
+	   
+	  Piezo (
+		 Model (
+		Mobility (
+			saturationfactor=0.2		 
+		   hSubband(Doping EffectiveMass Scattering(MLDA) -RelChDir110)
+	
+			)
+		DOS(eMass hMass)
+		DeformationPotential(Minimum ekp hkp)
+		)
+		  )
+	}
+
+}
+
+File{
+	Output= "@log@"
+}
+
+Plot{
+  eDensity hDensity
+  TotalCurrent/Vector eCurrent/Vector hCurrent/Vector
+  eMobility hMobility
+  eVelocity hVelocity
+  eQuasiFermi hQuasiFermi
+  eTemperature Temperature * hTemperature
+  ElectricField/Vector Potential SpaceCharge
+  Doping DonorConcentration AcceptorConcentration
+  SRH Band2Band * Auger
+  AvalancheGeneration eAvalancheGeneration hAvalancheGeneration
+  eGradQuasiFermi/Vector hGradQuasiFermi/Vector
+  eEparallel hEparallel eENormal hENormal
+  BandGap 
+  BandGapNarrowing
+  Affinity
+  ConductionBand ValenceBand
+  eQuantumPotential hQuantumPotential
+  eBarrierTunneling hBarrierTunneling * BarrierTunneling
+  eTrappedCharge  hTrappedCharge
+}
+
+Math {
+  Extrapolate
+  RelErrControl
+  Digits= 5
+  RHSmin= 1e-10
+  Notdamped= 50
+  Iterations= 20
+  ExitOnFailure
+  eDrForceRefDens= 1e12
+  hDrForceRefDens= 1e12
+  TensorGridAniso
+  StressMobilityDependence= TensorFactor
+#  StressLimit= 4e9  #[Pa]
+
+  Method= ILS
+  Number_Of_Threads= 8
+  -CheckUndefinedModels	  	  
+  
+  Surface "s1" (
+  MaterialInterface= "HfO2/Oxide" 
+  )
+
+  NonLocalPath (
+  	  Postprocessing
+  	  Derivative= 0                     # compute derivatives
+  	  Strategy=1						# use strategy 1
+  	  N=5 								# collect edges from last 5 iterations
+  	  MinStep=1.0e-5					# define lower boundary
+  	  MaxStep=1.0e-2					# define upper boundary
+  )  
+}
+
+System{
+	Vsource_pset  Vdl (DL 0)  { dc= 0.0 }
+	Vsource_pset  Vdr (DR 0)  { dc= 0.0 }
+	Vsource_pset  Vgl (GL 0)  { dc= 0.0 }
+	Vsource_pset  Vgr (GR 0)  { dc= 0.0 }
+	Vsource_pset  Vwd (WD 0)  { dc= 0.0 }
+	Vsource_pset  Vbl (BL 0)  { dc= 0.0 }
+	Vsource_pset  Vbr (BR 0)  { dc= 0.0 }
+	Vsource_pset  Vpl (PL 0)  { dc= 0.0 }
+	Vsource_pset  Vpr (PR 0)  { dc= 0.0 }
+	Resistor_pset Rpl (PL OL) { resistance= 1e12 }
+	Resistor_pset Rpr (PR OR) { resistance= 1e12 }
+	AMOS  amosL ( "source"=BL "drain"=OL "gate"=WD "substrate"=0)
+	AMOS  amosR ( "source"=BR "drain"=OR "gate"=WD "substrate"=0)
+	PMOS  pmosL ( "source"=DL "drain"=OL "gate"=OR "substrate"=DL)
+	NMOS  nmosL ( "source"=GL "drain"=OL "gate"=OR "substrate"=0)
+	PMOS  pmosR ( "source"=DR "drain"=OR "gate"=OL "substrate"=DR)
+	NMOS  nmosR ( "source"=GR "drain"=OR "gate"=OL "substrate"=0)
+	Plot "n@node@_sys_des.plt"
+	(time() v(DR) v(DL) v(WD) v(BR) v(BL) v(OL) v(OR) v(PL) v(PR) v(GR) v(GL)
+	        i(Rpl,OL) i(Rpr,OR)
+	        i(pmosR,DR) i(amosR,BR) i(nmosR,GR)
+	        i(pmosL,DL) i(amosL,BL) i(nmosL,GL))
+}
+
+Solve{
+	Set (Rpr."resistance"= 1.0)
+	Set (Rpl."resistance"= 1e12)
+	NewCurrentPrefix="bootR_"
+	Coupled(Iterations= 100 LineSearchDamping= 0.01){ Poisson }
+	Quasistationary( 
+		InitialStep= 1e-3 Increment= 1.35 
+		MinStep= 1e-5 MaxStep= 0.1 
+		Goal{ Parameter= Vdl.dc Voltage= _Vdd_Supply_ }
+		Goal{ Parameter= Vdr.dc Voltage= _Vdd_Supply_ }
+		Goal{ Parameter= Vbl.dc Voltage= _Vdd_Supply_ }
+		Goal{ Parameter= Vbr.dc Voltage= _Vdd_Supply_ }
+		Goal{ Parameter= Vpl.dc Voltage= _Vdd_Supply_ }
+		Goal{ Parameter= Vpr.dc Voltage= _Vdd_Supply_ }
+	){ Coupled{ Poisson Electron Hole Contact Circuit } }
+
+	Save ( FilePrefix="n@node@_boot" )
+# READ
+	NewCurrentPrefix="bootR_READ_"
+	Quasistationary(
+		InitialStep= 1e-3 Increment= 1.35 
+		MinStep= 1e-6 MaxStep= 0.1
+		Goal{ Parameter= Vwd.dc    Voltage= @WL@ }
+	){ Coupled{ Poisson Electron Hole Contact Circuit } }
+
+	Save ( FilePrefix="n@node@_flipR" )
+	
+	Load ( FilePrefix="n@node@_flipR" )
+
+# Left inverter voltage transfer characteristic (VTC)
+	NewCurrentPrefix="flipR_"
+	Quasistationary( 
+		InitialStep= 1e-3 Increment= 1.35 
+		MinStep= 1e-6 MaxStep= 0.025
+		Goal{ Parameter= Vpr.dc  Voltage=  0.0 }
+	){ ACCoupled (
+		StartFrequency= 0 EndFrequency= 0
+		NumberOfPoints= 1 Decade
+		Node(OL OR)
+		ObservationNode(OL)
+		Exclude(Vpl Vpr)
+		ACExtract= "n@node@_sram"
+		* NoisePlot= "n@node@_noise"
+##		ACcompute(   Time = (
+##		Range = (0.00 0.30) intervals= 10;
+##		Range = (0.30 0.70) intervals= 40;
+##		Range = (0.70 1.00) intervals= 10) )  
+	){ Poisson Electron Hole Contact Circuit }
+##		CurrentPlot( Time = (                                            
+##		Range = (0.00 0.30) intervals= 10;
+##		Range = (0.30 0.70) intervals= 40;
+##		Range = (0.70 1.00) intervals= 10) )
+	}
+	
+}
+
+
+===========================================
+load_library ifm
+
+#setdep @previous@
+set PL @node|Hold_Read_L@
+set PR @node|Hold_Read_R@
+
+proc PLOTALL { N P } {
+
+	load_file ${N}_n${P}_sys_des.plt -name D($N)     
+                         
+	create_plot -1d -name $N
+	select_plots $N
+	set_plot_prop -plot $N -title "$N" -title_font_size 16 -show_legend
+
+	set_axis_prop -plot $N -axis y  -title "Vout (V)"
+	set_axis_prop -plot $N -axis x  -title "Sweep"  
+	
+	create_curve -name  OL -dataset D($N) -axisX time -axisY v(OL)
+	set_curve_prop OL -label "OL" -color red -line_style solid -line_width 3
+
+	create_curve -name  OR -dataset D($N) -axisX time -axisY v(OR)
+	set_curve_prop OR -label "OUT" -color red -line_style solid -line_width 3
+                                                                               
+}  
+
+PLOTALL flipL $PL
+PLOTALL flipR $PR
+
+create_plot -1d -name SNM
+select_plots SNM
+#if @WL@ == 0.8
+set_plot_prop -plot SNM -title "READ Butterfly" -title_font_size 16 -show_legend
+#elif @WL@ == 0
+set_plot_prop -plot SNM -title "HOLD Butterfly" -title_font_size 16 -show_legend
+#endif
+set CSV_L(Header,0) "Left"
+set CSV_L(Data,0)   [get_variable_data v(OR) -dataset D(flipL)]
+set CSV_L(Data,1)   [get_variable_data v(OL) -dataset D(flipL)]
+
+set CSV_R(Header,0) "Right"
+set CSV_R(Data,0)   [get_variable_data v(OL) -dataset D(flipR)]
+set CSV_R(Data,1)   [get_variable_data v(OR) -dataset D(flipR)]
+set Ncol 1
+
+ifm::GetSNM -out SNM -squares SQ -vtc_left CSV_L -vtc_right CSV_R -ncol Ncol
+
+create_curve -name VTC(L) -dataset D(flipL) -axisX "v(OR)" -axisY "v(OL)"
+set_curve_prop VTC(L) -label VTC(L) -color red -line_style solid  -line_width 3 -hide_markers
+
+create_curve -name VTC(R) -dataset D(flipR) -axisX "v(OR)" -axisY "v(OL)"
+set_curve_prop VTC(R) -label VTC(R) -color blue -line_style solid  -line_width 3 -hide_markers
+
+create_variable -name SQ1_x(0) -dataset SQs -values $SQ(1,X,0)
+create_variable -name SQ1_y(0) -dataset SQs -values $SQ(1,Y,0)
+create_variable -name SQ2_x(0) -dataset SQs -values $SQ(2,X,0)
+create_variable -name SQ2_y(0) -dataset SQs -values $SQ(2,Y,0)
+	
+create_curve -name SQ1(0) -dataset SQs -axisX "SQ1_x(0)" -axisY "SQ1_y(0)"
+create_curve -name SQ2(0) -dataset SQs -axisX "SQ2_x(0)" -axisY "SQ2_y(0)"
+
+set_curve_prop SQ1(0) -label SQ1 -color black -line_style solid  -line_width 2 -hide_markers
+set_curve_prop SQ2(0) -label SQ2 -color black -line_style solid  -line_width 2 -hide_markers
+
+set_axis_prop -plot SNM -axis y  -title "Vout (V)" 	-title_font_size 16 -label_font_size 14 -type linear 
+set_axis_prop -plot SNM -axis x  -title "Vin (V)" 	-title_font_size 16 -label_font_size 14 -type linear 
+
+set_legend_prop -label_font_size 15 -location bottom_left 
+
+puts "DOE: SNMR [format %.3f $SNM(left)]"
+
+select_plots {flipL flipR}
+remove_plots {flipL flipR}
+
+set_window_size 1307x960
+=====================================================
+#define _Vdd_Supply_ 0.8
+
+Device AMOS {
+	Electrode {
+	  { Name="source"    Voltage= 0.0 DistResist= SchottkyResist }
+	  { Name="drain"     Voltage= 0.0 DistResist= SchottkyResist }
+	  { Name="gate"      Voltage= 0.0 Workfunction= 4.19}
+	  { Name="substrate" Voltage= 0.0 }
+	}
+	File {
+		Grid=      "n@node|sprocessN@_fps.tdr"
+		Parameter= "pp@node|IdVg_PD@_des.par"
+		Plot=      "@tdrdat@"
+		Current=   "@plot@"
+		Piezo     = "n@node|sprocessN@_fps.tdr"
+	}
+	Physics {
+	  Fermi
+	  AreaFactor= @<0.855*0.095>@
+	}
+	
+	
+	Physics ( Material= "Silicon" ) {   
+	  eQuantumPotential(AutoOrientation density)
+	  Mobility(
+		HighFieldSaturation
+		Enormal (
+		 IALMob(AutoOrientation)
+		 RPS                                    # Used for remote phonon scattering (RPS)
+		 NegInterfaceCharge (SurfaceName="s1")  # Used for remote Coulomb scattering (RCS) and remote dipole scattering (RDS)
+		 PosInterfaceCharge (SurfaceName="s1")  # Used for RCS and RDS
+				)
+			  )
+	  EffectiveIntrinsicDensity(OldSlotboom)
+	
+	  Recombination( Auger SRH( DopingDep ) Band2Band(Model= NonLocalPath) Avalanche(Okuto) )
+	  eMultivalley(MLDA kpDOS -density)
+	  hMultivalley(MLDA kpDOS -density)
+	   
+	  Piezo (
+		 Model (
+		Mobility (
+			saturationfactor=0.2
+			eSubband(Fermi  EffectiveMass Scattering(MLDA) -RelChDir110)
+			hSubband(Doping EffectiveMass Scattering(MLDA) -RelChDir110)
+			
+			)
+		DOS(eMass hMass)
+		DeformationPotential(Minimum ekp hkp)
+		)
+		  )
+	}
+}
+
+Device NMOS {
+	Electrode {
+	  { Name="source"    Voltage= 0.0 DistResist= SchottkyResist }
+	  { Name="drain"     Voltage= 0.0 DistResist= SchottkyResist }
+	  { Name="gate"      Voltage= 0.0 Workfunction= 4.155}
+	  { Name="substrate" Voltage= 0.0 }
+	}
+	File {
+		Grid=      "n@node|sprocessN@_fps.tdr"
+		Parameter= "pp@node|IdVg_PG@_des.par"
+		Plot=      "@tdrdat@"
+		Current=   "@plot@"
+		Piezo     = "n@node|sprocessN@_fps.tdr"
+	}
+	Physics {
+	  Fermi
+	  AreaFactor= @<0.855*0.065>@
+	}
+	
+	
+	Physics ( Material= "Silicon" ) {   
+	  eQuantumPotential(AutoOrientation density)
+	  Mobility(
+		HighFieldSaturation
+		Enormal (
+		 IALMob(AutoOrientation)
+		 RPS                                    # Used for remote phonon scattering (RPS)
+		 NegInterfaceCharge (SurfaceName="s1")  # Used for remote Coulomb scattering (RCS) and remote dipole scattering (RDS)
+		 PosInterfaceCharge (SurfaceName="s1")  # Used for RCS and RDS
+				)
+			  )
+	  EffectiveIntrinsicDensity(OldSlotboom)
+	  
+	  Recombination( Auger SRH( DopingDep ) Band2Band(Model= NonLocalPath) Avalanche(Okuto) )	  
+	  eMultivalley(MLDA kpDOS -density)
+	  hMultivalley(MLDA kpDOS -density)
+	   
+	  Piezo (
+		 Model (
+		Mobility (
+			saturationfactor=0.2
+			eSubband(Fermi  EffectiveMass Scattering(MLDA) -RelChDir110)
+			hSubband(Doping EffectiveMass Scattering(MLDA) -RelChDir110)
+			
+			)
+		DOS(eMass hMass)
+		DeformationPotential(Minimum ekp hkp)
+		)
+		  )
+	}
+}
+
+Device PMOS {
+	Electrode {
+	  { Name="source"    Voltage= 0.0  }
+	  { Name="drain"     Voltage= 0.0  }
+	  { Name="gate"      Voltage= 0.0 Workfunction= 4.705}
+	  { Name="substrate" Voltage= 0.0 }
+	}
+	File {
+		Grid=      "n@node|sprocessP@_fps.tdr"
+		Parameter= "pp@node|IdVg_PU@_des.par"
+		Plot=      "@tdrdat@"
+		Current=   "@plot@"
+		Piezo     = "n@node|sprocessP@_fps.tdr"
+	}
+	Physics {
+	  Fermi
+	  AreaFactor= @<0.855*0.04>@
+	}
+	
+	
+	Physics ( Material= "SiliconGermanium" ) {
+	   
+	  hQuantumPotential(AutoOrientation density) 
+	  MLDA 
+	  Mobility(
+		HighFieldSaturation
+		Enormal (
+		 IALMob(AutoOrientation PhononCombination=2)
+		 RPS                                    # Used for remote phonon scattering (RPS)
+		 NegInterfaceCharge (SurfaceName="s1")  # Used for remote Coulomb scattering (RCS) and remote dipole scattering (RDS)
+		 PosInterfaceCharge (SurfaceName="s1")  # Used for RCS and RDS
+				)
+			  )
+	  EffectiveIntrinsicDensity(OldSlotboom)
+
+	  Recombination( Auger SRH( DopingDep ) Band2Band(Model= NonLocalPath) Avalanche(Okuto) )
+	  eMultivalley(MLDA kpDOS parfile -density)
+	  hMultivalley(MLDA kpDOS -density)
+	   
+	  Piezo (
+		 Model (
+		Mobility (
+			saturationfactor=0.2		 
+		   hSubband(Doping EffectiveMass Scattering(MLDA) -RelChDir110)
+	
+			)
+		DOS(eMass hMass)
+		DeformationPotential(Minimum ekp hkp)
+		)
+		  )
+	}
+
+}
+
+File{
+	Output= "@log@"
+}
+
+Plot{
+  eDensity hDensity
+  TotalCurrent/Vector eCurrent/Vector hCurrent/Vector
+  eMobility hMobility
+  eVelocity hVelocity
+  eQuasiFermi hQuasiFermi
+  eTemperature Temperature * hTemperature
+  ElectricField/Vector Potential SpaceCharge
+  Doping DonorConcentration AcceptorConcentration
+  SRH Band2Band * Auger
+  AvalancheGeneration eAvalancheGeneration hAvalancheGeneration
+  eGradQuasiFermi/Vector hGradQuasiFermi/Vector
+  eEparallel hEparallel eENormal hENormal
+  BandGap 
+  BandGapNarrowing
+  Affinity
+  ConductionBand ValenceBand
+  eQuantumPotential hQuantumPotential
+  eBarrierTunneling hBarrierTunneling * BarrierTunneling
+  eTrappedCharge  hTrappedCharge
+}
+
+Math {
+	ExtendedPrecision
+	ExitOnFailure
+	Extrapolate                                                                                                                  
+	RelErrControl
+	Digits= 6
+	RHSmin= 1e-10
+	Notdamped= 50
+	Iterations= 20
+    RefDens_eGradQuasiFermi_ElectricField_HFS = 1e9
+    RefDens_hGradQuasiFermi_ElectricField_HFS = 1e9
+	Method= Blocked
+	SubMethod= Super
+	ACMethod= Blocked
+	ACSubMethod= Pardiso
+
+#  Method= ILS
+  Number_Of_Threads= 8
+  -CheckUndefinedModels	  	  
+  
+  Surface "s1" (
+  MaterialInterface= "HfO2/Oxide" 
+  )
+
+  NonLocalPath (
+  	  Postprocessing
+  	  Derivative= 0                     # compute derivatives
+  	  Strategy=1						# use strategy 1
+  	  N=5 								# collect edges from last 5 iterations
+  	  MinStep=1.0e-5					# define lower boundary
+  	  MaxStep=1.0e-2					# define upper boundary
+  )  
+}
+
+System{
+	Vsource_pset  Vdl (DL 0)  { dc= 0.0 }
+	Vsource_pset  Vdr (DR 0)  { dc= 0.0 }
+	Vsource_pset  Vgl (GL 0)  { dc= 0.0 }
+	Vsource_pset  Vgr (GR 0)  { dc= 0.0 }
+	Vsource_pset  Vwd (WD 0)  { dc= 0.0 }
+	Vsource_pset  Vbl (BL 0)  { dc= 0.0 }
+	Vsource_pset  Vbr (BR 0)  { dc= 0.0 }                                                                                   
+#	Vsource_pset  Vpl (OL 0)  { dc= 0.0 }
+#	Vsource_pset  Vpr (OR 0)  { dc= 0.0 }
+	Resistor_pset Rpl (AL OL) { resistance= 1e12 }
+	Resistor_pset Rpr (AR OR) { resistance= 1e12 }
+	Vsource_pset  Val (AL 0)  { dc= 0.0 }
+	Vsource_pset  Var (AR 0)  { dc= 0.0 }	
+	
+	AMOS  amosL ( "source"=BL "drain"=OL "gate"=WD "substrate"=0)
+	AMOS  amosR ( "source"=BR "drain"=OR "gate"=WD "substrate"=0)
+	PMOS  pmosL ( "source"=DL "drain"=OL "gate"=OR "substrate"=DL)
+	NMOS  nmosL ( "source"=GL "drain"=OL "gate"=OR "substrate"=0)
+	PMOS  pmosR ( "source"=DR "drain"=OR "gate"=OL "substrate"=DR)
+	NMOS  nmosR ( "source"=GR "drain"=OR "gate"=OL "substrate"=0)
+	Plot "n@node@_sys_des.plt"
+	(time() v(DR) v(DL) v(WD) v(BR) v(BL) v(OL) v(OR) v(GR) v(GL)
+	        i(Rpl,OL) i(Rpr,OR)
+	        i(pmosR,DR) i(amosR,BR) i(nmosR,GR)
+	        i(pmosL,DL) i(amosL,BL) i(nmosL,GL))
+}
+
+Solve{	                                                        
+	Set (Rpl."resistance"= 1.0)
+	Set (Rpr."resistance"= 1e12)
+	NewCurrentPrefix="bootL_"
+	Coupled(Iterations= 100 LineSearchDamping= 0.01){ Poisson }
+	Quasistationary( 
+		InitialStep= 1e-3 Increment= 1.35 
+		MinStep= 1e-5 MaxStep= 0.1 
+		Goal{ Parameter= Vdl.dc Voltage= _Vdd_Supply_ }
+		Goal{ Parameter= Vdr.dc Voltage= _Vdd_Supply_ }
+		Goal{ Parameter= Vbl.dc Voltage= _Vdd_Supply_ }
+		Goal{ Parameter= Vbr.dc Voltage= _Vdd_Supply_ }
+		Goal{ Parameter= Val.dc Voltage= _Vdd_Supply_ }
+		Goal{ Parameter= Var.dc Voltage= _Vdd_Supply_ }
+	){ Coupled{ Poisson Electron Hole Contact Circuit } }
+
+	Save ( FilePrefix="n@node@_boot" )
+# WRITE
+	NewCurrentPrefix="bootL_WRITE_"
+	Quasistationary(
+		InitialStep= 1e-3 Increment= 1.35 
+		MinStep= 1e-6 MaxStep= 0.1
+		Goal{ Parameter= Vwd.dc    Voltage= @WL@ }
+	){ Coupled{ Poisson Electron Hole Contact Circuit } }
+
+	Save ( FilePrefix="n@node@_flipL" )	
+
+	Load ( FilePrefix="n@node@_flipL" )
+
+	Set (Rpl."resistance"= 1e12)
+	Set (Rpr."resistance"= 1e12)                                     
+             
+	NewCurrentPrefix="WRITE_"   		
+	Quasistationary( 
+		InitialStep= 1e-3 Increment= 1.5
+		MinStep= 1e-20 MaxStep= 0.05
+	Goal{ Parameter= Vbl.dc  Voltage=  0.0 }    
+##	){ Coupled (LineSearchDamping= 0.01 Iterations= 50) { Poisson Electron Hole Contact Circuit } 
+	){ Poisson Electron Hole Contact Circuit } 
+#		CurrentPlot( Time = (                                            
+#		Range = (0.00 0.575) intervals= 25;
+#		Range = (0.575 0.65) intervals= 2000;
+#		Range = (0.65 1.00) intervals= 25) )                                                     
+}	
+		
+}
+
+
+=====================================================
+#setdep @node|WRITE@
+#----------------------------------------------------------------------#
+load_library extract
+lib::SetInfoDef 1
+set N     @node@
+set i     @node:index@
+
+#- Automatic alternating color assignment tied to node index
+#----------------------------------------------------------------------#
+set COLORS  [list green blue red orange magenta violet brown]
+set NCOLORS [llength $COLORS]
+set color   [lindex  $COLORS [expr $i%$NCOLORS]]
+
+#- Plotting IdVg
+#----------------------------------------------------------------------#
+echo "#########################################"
+echo "Plotting Id-Vg (lin) curve"
+echo "#########################################"
+load_file WRITE_n@node|-1@_sys_des.plt -name PLT_WRITE($N)
+
+if {[lsearch [list_plots] Plot_WRITE] == -1} {
+	create_plot -1d -name Plot_WRITE
+}
+select_plots Plot_WRITE
+
+set VBL [get_variable_data "v(BL)" -dataset PLT_WRITE($N)]
+set VOL [get_variable_data "v(OL)" -dataset PLT_WRITE($N)]
+set VOR [get_variable_data "v(OR)" -dataset PLT_WRITE($N)]
+
+create_curve -name VL($N) -dataset PLT_WRITE($N) \
+	-axisX "v(OL)" -axisY "v(BL)"
+
+create_curve -name VR($N) -dataset PLT_WRITE($N) \
+	-axisX "v(OR)" -axisY "v(BL)"	
+	
+set_curve_prop VL($N) -label "VOL" \
+	-color $color -line_style solid -line_width 3
+	
+set_curve_prop VR($N) -label "VOR" \
+	-color $color -line_style solid -line_width 3
+	
+	
+set_plot_prop -title "Write Curves" -title_font_size 16 -show_legend
+set_axis_prop -axis x -title {Node Voltage [V]} \
+	-title_font_size 16 -label_font_size 14 -type linear 
+set_axis_prop -axis y -title {BL Voltage [V]} \
+	-title_font_size 16 -label_font_size 14 -type log
+set_legend_prop -label_font_size 12 -location bottom_right -label_font_att bold
+	
+	 
+
+ext::ExtractExtremum -out WML  -name "noprint"  -x $VOL -y $VBL -type "min"
+ext::ExtractExtremum -out WMR  -name "noprint"  -x $VOR -y $VBL -type "min"
+
+puts "DOE: WML [format %.3f $WML]"
+puts "DOE: WMR [format %.3f $WMR]"
+
