@@ -1,0 +1,183 @@
+import matplotlib.pyplot as plt
+import pandas as pd
+import seaborn as sns
+import numpy as np
+import matplotlib as mpl
+import plotly.express as px
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
+from scipy.optimize import curve_fit
+
+pd.set_option('display.max_rows', None) 
+pd.set_option('display.max_columns', None)
+pd.set_option('display.precision', 3)
+
+def TrendPlot_px(data,x,y,color,symbol,xlabel,ylabel,title,fit='ols',log_y=False):
+    if fit=='ols' or 'lowess':
+        fig=px.scatter(data,x=x,y=y,color=color,symbol=symbol,trendline=fit,width=900,height=600,template='seaborn',log_y=log_y)
+    elif fit== 'no':
+        fig=px.scatter(data,x=x,y=y,color=color,symbol=symbol,width=900,height=600,template='seaborn',log_y=log_y)
+    
+    fig.update_traces(marker_size=20,line_dash='dashdot',line_shape='spline',line_smoothing=1.0)
+    fig.update_xaxes(showgrid=True,gridcolor='lightgray')
+    fig.update_yaxes(showgrid=True,gridcolor='lightgray')
+    fig.update_layout(xaxis_title=xlabel,
+                      yaxis_title=ylabel,
+                      title=title, title_y=0.95,
+                      font_size=20,
+                      legend=dict(x=1.0,y=1.0,font_size=15,bgcolor='rgba(0,0,0,0)')
+                 )
+    return fig
+
+def TrendPlot_F_px(data,x,y,color,symbol,facet,xlabel,ylabel,title,fit='ols',log_y=False):
+    if fit=='ols' or 'lowess':
+        fig=px.scatter(data,x=x,y=y,color=color,symbol=symbol,facet_col=facet,trendline=fit,width=900,height=600,template='seaborn',log_y=log_y)
+    elif fit== 'no':
+        fig=px.scatter(data,x=x,y=y,color=color,symbol=symbol,facet_col=facet,width=900,height=600,template='seaborn',log_y=log_y)
+    
+    fig.update_traces(marker_size=20,line_dash='dashdot',line_shape='spline',line_smoothing=1.0)
+    fig.update_xaxes(showgrid=True,gridcolor='lightgray')
+    fig.update_yaxes(showgrid=True,gridcolor='lightgray')
+    fig.update_layout(xaxis_title=xlabel,
+                      yaxis_title=ylabel,
+                      title=title, title_y=0.95,
+                      font_size=20,
+                      legend=dict(x=1.0,y=1.0,font_size=15,bgcolor='rgba(0,0,0,0)')
+                 )
+    return fig
+
+
+def TrendPlotW_px(data,x,y,color,symbol,xlabel,ylabel,title,fit='ols',log_y=False):
+    if fit=='ols' or 'lowess':
+        fig=px.scatter(data,x=x,y=y,color=color,symbol=symbol,trendline=fit,width=900,height=600,template='seaborn',log_y=log_y)
+    elif fit== 'no':
+        fig=px.scatter(data,x=x,y=y,color=color,symbol=symbol,width=900,height=600,template='seaborn',log_y=log_y)
+    
+    fig.update_traces(marker_size=20,line_dash='dashdot',line_shape='spline',line_smoothing=1.0)
+    fig.update_xaxes(showgrid=True,gridcolor='lightgray', exponentformat= 'e',  minor=dict(showgrid=True, gridcolor='lightgray' ))
+    fig.update_yaxes(showgrid=True,gridcolor='lightgray')
+    fig.update_layout(xaxis_title=xlabel,
+                      yaxis_title=ylabel,
+                      title=title, title_y=0.97,
+                      font_size=20,
+                      legend=dict(x=1.0,y=1.0,font_size=20,bgcolor='rgba(0,0,0,0)')                    
+                 )
+    fig.update_layout(
+    plot_bgcolor='white',  # 图表内部背景颜色
+    paper_bgcolor='white',  # 图表外部背景颜色
+    xaxis=dict(
+        showline=True,  # 显示轴线
+        linewidth=1,
+        linecolor='black',  # 轴线颜色
+        mirror=True,  # 在轴的另一侧也绘制线条
+        showgrid=True,
+        gridcolor='rgba(0, 0, 0, 0.2)',  # 主要网格线颜色
+        minor=dict(
+            showgrid=True,
+            gridcolor='rgba(0, 0, 0, 0.1)'  # 次要网格线颜色
+        )
+    ),
+    yaxis=dict(
+        showline=True,  # 显示轴线
+        linewidth=1,
+        linecolor='black',  # 轴线颜色
+        mirror=True,  # 在轴的另一侧也绘制线条
+        showgrid=True,
+        gridcolor='rgba(0, 0, 0, 0.2)',  # 主要网格线颜色
+        minor=dict(
+            showgrid=True,
+            gridcolor='rgba(0, 0, 0, 0.1)'  # 次要网格线颜色
+        )
+    ),
+    margin=dict(l=50, r=50, t=50, b=50)  # 边距调整
+)
+    
+    return fig
+
+def TrendPlot_add_px(data,x,y1,y2,color,symbol,xlabel,ylabel,title,fit='ols',log_y=False):
+    if fit=='ols' or 'lowess':
+        fig=px.scatter(data,x=x,y=y,color=color,symbol=symbol,trendline=fit,width=900,height=600,template='seaborn',log_y=log_y)
+    elif fit== 'no':
+        fig=px.scatter(data,x=x,y=y,color=color,symbol=symbol,width=900,height=600,template='seaborn',log_y=log_y)
+
+    help_fig=px.scatter(data,x=x,y=y2,trendline='lowess')
+    x_trend = help_fig['data'][1]['x']
+    y_trend = help_fig['data'][1]['y']
+
+    fig.add_trace(go.Scatter(x=x_trend,y=y_trend,mode='lines',marker_color='gray',showlegend=False))
+    
+    fig.update_traces(marker_size=20,line_dash='dashdot',line_shape='spline',line_smoothing=1.0)
+    fig.update_xaxes(showgrid=True,gridcolor='lightgray',exponentformat= 'e')
+    fig.update_yaxes(showgrid=True,gridcolor='lightgray')
+    fig.update_layout(xaxis_title=xlabel,
+                      yaxis_title=ylabel,
+                      title=title, title_y=0.95,
+                      font_size=20,
+                      legend=dict(x=1.0,y=1.0,font_size=12,bgcolor='rgba(0,0,0,0)')
+                 )
+    return fig
+
+##def LinePlot_px(data,x,y,color,symbol,xlabel,ylabel,title,log_y=False):
+##    fig=px.line(data,x=x,y=y,color=color,symbol=symbol,width=900,height=600,template='seaborn',log_y=log_y)    
+##    fig.update_traces(marker_size=20,line_dash='dashdot')
+##    fig.update_xaxes(showgrid=True,gridcolor='lightgray')
+##    fig.update_yaxes(showgrid=True,gridcolor='lightgray')
+##    fig.update_layout(xaxis_title=xlabel,
+##                      yaxis_title=ylabel,
+##                      title=title, title_y=0.95,
+##                      font_size=20,
+##                      legend=dict(x=1.0,y=1.0,font_size=12,bgcolor='rgba(0,0,0,0)')
+##                 )
+##    return fig
+
+def LinePlot_px(data,x,y,color,symbol,xlabel,ylabel,title,log_y=False):
+
+    fig=px.line(data,x=x,y=y,color=color,symbol=symbol,width=900,height=600,template='seaborn',log_y=log_y,
+               symbol_sequence= ['circle','square','diamond','cross','x','triangle-up','triangle-down','triangle-left',
+                                'triangle-right','pentagon','hexagon','hexagon2','octagon','star','hexagram',
+                                'circle-open','square-open','diamond-open','cross-open','x-open','triangle-up-open'])
+    
+    fig.update_traces(marker_size=20,line_dash='dashdot',)
+    fig.update_xaxes(showgrid=True,gridcolor='lightgray')
+    fig.update_yaxes(showgrid=True,gridcolor='lightgray')
+    fig.update_layout(xaxis_title=xlabel,
+                      yaxis_title=ylabel,
+                      title=title, title_y=0.95,
+                      font_size=20,
+                      legend=dict(x=1.0,y=1.0,font_size=12,bgcolor='rgba(0,0,0,0)')
+                 )
+    return fig
+
+def ScatterF_px(data,x,y,color,symbol,facet,xlabel,ylabel,title,log_y=False):
+    
+    fig=px.scatter(data,x=x,y=y,color=color,symbol=symbol,facet_col=facet,width=900,height=600,template='seaborn',log_y=log_y)
+
+    fig.update_traces(marker_size=20, mode='lines+markers')
+    fig.update_xaxes(showgrid=True,gridcolor='lightgray')
+    fig.update_yaxes(showgrid=True,gridcolor='lightgray')
+    fig.update_layout(xaxis_title=xlabel,
+                      yaxis_title=ylabel,
+                      title=title, title_y=0.95,
+                      font_size=20,
+                      legend=dict(x=1.0,y=1.0,font_size=12,bgcolor='rgba(0,0,0,0)',traceorder='normal')
+                 )
+    return fig
+    
+def Contour_px(data,x,y,z,xlabel,ylabel,title,colortitle):
+    df=data.pivot(index=x,columns=y,values=z)
+    x1=df.index.values
+    y1=df.columns.values
+    z1=df.values
+    fig=go.Figure(data=[go.Contour(x=y1,y=x1,z=z1,colorscale='RdYlGn', contours=dict(showlabels=True),colorbar=dict(title=colortitle))])
+    fig.update_xaxes(showgrid=True,gridcolor='lightgray')
+    fig.update_yaxes(showgrid=True,gridcolor='lightgray')
+    fig.update_layout(xaxis_title=xlabel,
+                      yaxis_title=ylabel,
+                      title=title, title_y=0.95,
+                      font_size=20,
+                      legend=dict(x=1.0,y=1.0,font_size=12,bgcolor='rgba(0,0,0,0)',traceorder='normal')
+                 )
+    return fig    
+
+##symbol_sequence= ['circle','square','diamond','cross','x','triangle-up','triangle-down','triangle-left','triangle-right','pentagon','hexagon','hexagon2','octagon','star','hexagram','circle-open','square-open','diamond-open','cross-open','x-open','triangle-up-open']
+
