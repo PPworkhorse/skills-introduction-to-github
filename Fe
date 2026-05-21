@@ -1,1 +1,241 @@
+#if @CV@ == 0
+#noexec
+#endif
+
+#define _Vds_ 		@<Vd>@
+#define _VgsStart_ 	@<-1.0*Vg>@
+#define _VgsEnd_ 	@<1.0*Vg>@
+
+*----------------------------------------------------------------------
+Device MOS {
+*----------------------------------------------------------------------
+File {
+	* input files:
+	Grid=       "@tdr@"
+	Piezo=      "@tdr@"
+	Parameters= "@parameter@"
+	* output files:
+	Plot=       "@tdrdat@"
+	Current=    "@plot@"
+}
+
+
+* 2 Boundary Condition 
+Electrode{
+	{Name= "source" 	Voltage= 0.0 }
+	{Name= "gate" 		Voltage= 0.0 Material= "Tungsten" }
+	{Name= "drain" 		Voltage= 0.0 }
+	{Name= "substrate" 	Voltage= 0.0 }
+	{Name= "Dummy" 	Voltage= 0.0 }	
+}
+
+#if [string match "*IGZO*" "@material@"]
+Physics (Material="IGZO"){
+	Fermi
+	Recombination(SRH Auger)
+	Mobility(ConstantMobility)
+	EffectiveIntrinsicDensity(NobandgapNarrowing)
+	
+	Traps(   
+         (Donor Exponential fromValBand Conc=1.55e+20 EnergyMid=0 EnergySig=0.12)
+         (Donor Gaussian fromCondBand Conc=8.55e+18  EnergyMid=0.15 EnergySig=0.1)
+         (Acceptor Exponential fromCondBand Conc=1.55e+17  EnergyMid=0 EnergySig=0.013)
+         #(Acceptor Gaussian fromCondBand Conc=1.962e+19 EnergyMid=0.51 EnergySig=0.1)
+	)
+	
+}
+#endif 
+
+#if [string match "*Si*" "@material@"]
+Physics (Material="@material@"){
+	Fermi
+	Mobility(
+		DopingDep
+		Enormal
+	)
+	Recombination (
+		SRH(DopingDep)
+		Auger 
+	) 
+   Traps (
+	 (Donor Exponential fromValBand Conc=2.31424e+20 EnergyMid=0 EnergySig=0.05)
+	 (Donor Gaussian fromValBand Conc=2.1375902025e+20 EnergyMid=0.51 EnergySig=0.105)
+	 (Acceptor Exponential fromCondBand Conc=1.492992e+20 EnergyMid=0 EnergySig=0.05)
+	 (Acceptor Gaussian fromCondBand Conc=1.962e+19 EnergyMid=0.51 EnergySig=0.1)
+   )
+	
+}
+#endif 
+
+
+Physics{
+	    Fermi
+	     
+}
+  
+
+Physics (Material = "HfZrO") { 
+	 Polarization (memory=20) 
+}
+ 
+
+ 
+* 4 math                     
+* 5 output
+Plot{
+  *- Carrier Densities:
+  eDensity hDensity
+  # EffectiveIntrinsicDensity IntrinsicDensity
+  # eEquilibriumDensity hEquilibriumDensity
+  *- Currents and current components:
+  Current/Vector eCurrent/Vector hCurrent/Vector
+  # ConductionCurrent/Vector DisplacementCurrent/Vector
+  eMobility hMobility
+  eVelocity hVelocity
+  *- Fields, Potentials and Charge distributions
+  ElectricField/Vector
+  Potential
+  eQuasiFermi hQuasiFermi
+  SpaceCharge
+  *- Driving forces
+  # eGradQuasiFermi/Vector hGradQuasiFermi/Vector
+  # eEparallel hEparallel 
+  # eENormal hENormal
+  # eEffectiveField hEffectiveField
+  *- Temperatures
+  LatticeTemperature
+  eTemperature hTemperature
+  *- Generation/Recombination
+  SRHRecombination Band2BandGeneration AugerRecombination RadiativeRecombination
+  AvalancheGeneration eAvalancheGeneration hAvalancheGeneration
+  TotalRecombination
+  eLifeTime hLifeTime
+  SurfaceRecombination
+  # CDL CDL1 CDL2 CDL3
+  # eCDL1lifetime eCDL2lifetime hCDL1lifetime hCDL2lifetime
+  # SurfaceMultRecombination
+  *- Doping Profiles
+  Doping 
+  DonorConcentration AcceptorConcentration
+  # AntimonyConcentration ArsenicConcentration BoronConcentration 
+  # IndiumConcentration NitrogenConcentration PhosphorusConcentration
+  # NDopantConcentration PDopantConcentration
+  *- Incomplete ionization
+  # AsPlus PhPlus SbPlus NitrogenPlus
+  # BMinus InMinus 
+  # NDopantPlus PDopantMinus 
+
+  *- Band structure
+  BandGap 
+  BandGapNarrowing
+  ElectronAffinity
+  ConductionBandEnergy ValenceBand
+  eQuantumPotential hQuantumPotential
+  *- Composition
+  # xMoleFraction yMoleFraction
+  *- Traps
+  # eTrappedCharge hTrappedCharge
+  # eGapStatesRecombination hGapStatesRecombination
+  *- Optical Generation
+  # ComplexRefractiveIndex AbsorbedPhotonDensity OpticalGeneration
+  # OpticalAbsorptionHeat QuantumYield
+  *- Generation due to Ion Strikes
+  # AlphaCharge HeavyIonChargeDensity
+  *- Gate Tunneling/Hot carrier injection
+  # FowlerNordheim 
+  # HotElectronInjection HotHoleInjection
+  *- Tunneling
+  # BarrierTunneling eBarrierTunneling hBarrierTunneling
+  # eDirectTunnelCurrent hDirectTunnelCurrent
+  *- Ionization Integrals
+  # MeanIonIntegral eIonIntegral hIonIntegral 
+  *- Heat flow
+  # TotalHeat eJouleHeat hJouleHeat
+  # PeltierHeat ThomsonHeat RecombinationHeat
+  # ThermalConductivity 
+  *- Stress-Tensor
+  # Stressxx Stressxy Stressxz Stressyy Stressyz Stresszz
+  *- Ferro-electrical Polarization
+  # Polarization/Vector
+  *- Piezo
+  # PiezoCharge ConversePiezoelectricField
+  # ConversePiezoelectricFieldXX ConversePiezoelectricFieldXY ConversePiezoelectricFieldXZ
+  # ConversePiezoelectricFieldYY ConversePiezoelectricFieldYZ ConversePiezoelectricFieldZZ
+ 
+  Polarization
+    Polarization/Vector
+}
+
+
+*----------------------------------------------------------------------
+} * End of Device
+*----------------------------------------------------------------------
+
+Math {
+	ExitOnFailure
+	Transient= BE
+	ExtendedPrecision
+	NumberOfThreads=4
+	Extrapolate(order=2)
+	RelErrControl
+	DirectCurrent
+	RHSmax=1e30
+	RHSfactor=1e30
+	RHSfactor1=1e30
+	Digits = 7
+	method=ParDiSO 
+	ErrRef(electron)=1e-6
+	ErrRef(hole)=1e-6
+
+	RHSMin=1e-20
+	eDrForceRefDens=1e5
+	hDrForceRefDens=1e5
+	Notdamped=20
+	Iterations=30
+	Traps(damping=0)
+	Cylindrical(XAxis=0)
+}    
+
+File {
+	Output= "@log@"
+	ACExtract= "@acplot@"
+}
+
+
+System {
+	MOS mos (drain=d source=s gate=g substrate=b Dummy=u)
+	Vsource_pset vd ( d 0 ){ dc = 0 }
+	Vsource_pset vs ( s 0 ){ dc = 0 }
+	Vsource_pset vg ( g 0 ){ dc = 0 }
+	Vsource_pset vb ( b 0 ){ dc = 0 }	
+	Resistor_pset Ru (u 0) { resistance= 1.0 }	
+}
+
+
+Solve {
+
+	*- Creating initial guess:
+	NewCurrentPrefix="n@node@_init"
+	Coupled(Iterations= 1000 LineSearchDamping= 1e-8){ Poisson Electron Hole }
+	Set (Ru."resistance"= 1e12)	
+	Quasistationary(
+		InitialStep= 1e-2 Increment= 1.5
+		MinStep= 1e-6 MaxStep= 0.1
+		Goal { Parameter= vg.dc Voltage= -1 }
+	){ Coupled { Poisson Electron Hole } }
+	
+	NewCurrentPrefix=""
+	Quasistationary(
+		DoZero
+		InitialStep= 1e-2 Increment= 1.5
+		MinStep= 1e-6 MaxStep= 0.1
+		Goal { Parameter= vg.dc Voltage= 1 }
+	){ ACCoupled (
+		 StartFrequency= 1e6 EndFrequency= 1e6 NumberOfPoints= 1 Decade
+		 Node(d s g b u) Exclude(vd vs vg vb )
+		 ACCompute (Time= (Range = (0 1)  Intervals= 40))
+		){ Poisson Electron Hole }
+	}
+}
+
 
